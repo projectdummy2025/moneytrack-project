@@ -4,12 +4,13 @@ Dokumen ini mendefinisikan struktur database menggunakan **Drizzle ORM** dengan 
 
 ## 1. Entity Relationship Diagram (ERD) - Logika
 Secara konseptual, relasi antar tabel adalah sebagai berikut:
-- **User** memiliki banyak **Accounts** (1:N)
+- **User** memiliki banyak **Wallets** (1:N)
 - **User** memiliki banyak **Categories** (1:N)
 - **User** memiliki banyak **Transactions** (1:N)
-- **Account** memiliki banyak **Transactions** (1:N)
-- **Category** memiliki banyak **Transactions** (1:N)
-- **Transaction (Transfer)** melibatkan dua **Accounts** (Source & Destination).
+- **User** memiliki banyak **Wallet Transfers** (1:N)
+- **Wallet** memiliki banyak **Transactions** (Incomes/Expenses)
+- **Category** memiliki banyak **Transactions** (Classification: Income/Expense)
+- **Wallet Transfer** melibatkan dua **Wallets** (**Source** & **Target**) milik user yang sama.
 
 ## 2. Definisi Skema (Drizzle ORM)
 
@@ -71,16 +72,15 @@ export const verificationTokens = pgTable("verification_tokens", {
 }));
 ```
 
-### B. Tabel Accounts (Dompet/Bank)
-Menyimpan saldo dan informasi akun keuangan.
+### B. Tabel Wallets (Dompet/Bank)
 ```typescript
-export const accounts = pgTable("accounts", {
+export const wallets = pgTable("wallets", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(), // Misal: "Bank BCA", "Dompet Tunai"
-  type: text("type").notNull(), // Misal: "bank", "cash", "e-wallet"
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  walletName: text("wallet_name").notNull(), // Misal: "Bank BCA", "Dompet Tunai"
+  walletType: text("wallet_type").notNull(), // Misal: "bank", "cash", "e-wallet"
   balance: numeric("balance", { precision: 15, scale: 2 }).default("0").notNull(),
-  currency: text("currency").default("IDR").notNull(),
+  currencyCode: text("currency_code").default("IDR").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 ```
@@ -90,38 +90,73 @@ Kategori kustom untuk pengeluaran dan pemasukan.
 ```typescript
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
-  type: text("type", { enum: ["income", "expense"] }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  categoryName: text("category_name").notNull(),
+  classification: text("classification", { enum: ["income", "expense"] }).notNull(),
   icon: text("icon"), // Nama ikon (misal: "utensils", "car")
   color: text("color"), // Kode warna hex
 });
 ```
 
-### D. Tabel Transactions
-Inti dari aplikasi, mencatat setiap aliran uang.
+### D. Tabel Transactions (Incomes/Expenses)
+Mencatat aliran uang masuk atau keluar yang memiliki kategori.
 ```typescript
 export const transactions = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  accountId: uuid("account_id").references(() => accounts.id, { onDelete: "cascade" }).notNull(),
-  categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  walletId: uuid("wallet_id").references(() => wallets.id, { onDelete: "cascade" }).notNull(),
+  categoryId: uuid("category_id").references(() => categories.id, { onDelete: "cascade" }).notNull(),
   
   amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
-  date: timestamp("date").notNull(),
-  note: text("note"),
-  
-  type: text("type", { enum: ["income", "expense", "transfer"] }).notNull(),
-  
-  // Khusus untuk transfer antar akun
-  toAccountId: uuid("to_account_id").references(() => accounts.id, { onDelete: "cascade" }),
+  transactedAt: timestamp("transacted_at").notNull(),
+  memo: text("memo"),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 ```
 
+### E. Tabel Wallet Transfers (Pindah Saldo)
+Khusus untuk mencatat kegiatan memindahkan uang antar rekening/dompet pribadi. Tidak memerlukan kategori.
+```typescript
+export const walletTransfers = pgTable("wallet_transfers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  
+  sourceId: uuid("source_id").references(() => wallets.id, { onDelete: "cascade" }).notNull(),
+  targetId: uuid("target_id").references(() => wallets.id, { onDelete: "cascade" }).notNull(),
+  
+  amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
+  transactedAt: timestamp("transacted_at").notNull(),
+  memo: text("memo"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+```
+
+### F. Relationship Logic (Drizzle Relations)
+Digunakan untuk mempermudah pengambilan data relasi (seperti Eloquent di Laravel).
+
+```typescript
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  wallet: one(wallets, { fields: [transactions.walletId], references: [wallets.id] }),
+  category: one(categories, { fields: [transactions.categoryId], references: [categories.id] }),
+}));
+
+export const walletTransfersRelations = relations(walletTransfers, ({ one }) => ({
+  sourceWallet: one(wallets, { fields: [walletTransfers.sourceId], references: [wallets.id] }),
+  targetWallet: one(wallets, { fields: [walletTransfers.targetId], references: [wallets.id] }),
+}));
+```
+
 ## 3. Catatan Penting
 1. **Precision Numeric:** Menggunakan `numeric(15, 2)` untuk menghindari masalah floating point pada perhitungan uang.
-2. **OnDelete Cascade:** Jika user menghapus akunnya, semua data terkait (wallet & transaksi) akan ikut terhapus otomatis.
-3. **Transfer Logic:** Jika `type` adalah `transfer`, maka `toAccountId` harus diisi. Di level aplikasi, ini akan memicu pengurangan di `accountId` dan penambahan di `toAccountId`.
-4. **Index:** Disarankan menambahkan index pada kolom `userId` dan `date` untuk mempercepat query laporan bulanan.
+2. **OnDelete Cascade:** Jika user menghapus akunnya, semua data terkait (wallet, transaksi, & transfer) akan ikut terhapus otomatis.
+3. **Pemisahan Logika:** 
+   - `transactions` digunakan untuk Pemasukan/Pengeluaran (Wajib ada kategori).
+   - `wallet_transfers` digunakan untuk Pindah Saldo sendiri (Wajib ada **Source** & **Target** ID).
+4. **Premium Naming:** Menggunakan nama atribut yang deskriptif seperti `transacted_at` untuk waktu kejadian dan `classification` untuk membedakan kategori.
+5. **Penanganan Biaya Admin (Code Logic):** Untuk menjaga database tetap simpel dan skalabel, biaya admin transfer tidak dibuatkan kolom khusus. Jika ada transfer yang memiliki biaya (misal: Transfer antar bank), maka di level **Code** akan mencatat dua data:
+   - Satu baris di `wallet_transfers` (untuk nominal uang yang benar-benar dipindahkan).
+   - Satu baris di `transactions` (sebagai pengeluaran/expense untuk biaya adminnya).
+6. **Trial Mode (User-less):** Untuk keperluan ujicoba tanpa login, kolom `userId` dibuat opsional (Nullable). Ini memungkinkan aplikasi berjalan dalam mode "Guest" sebelum akhirnya dihubungkan ke sistem autentikasi penuh.
+7. **Index:** Disarankan menambahkan index pada kolom `userId` dan `transacted_at` di kedua tabel utama untuk mempercepat pembuatan laporan bulanan.
