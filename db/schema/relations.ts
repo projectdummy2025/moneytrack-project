@@ -51,8 +51,8 @@ export const walletsRelations = relations(wallets, ({ one, many }) => ({
     references: [users.id],
   }),
   transactions: many(transactions),
-  sourceTransfers: many(walletTransfers),
-  targetTransfers: many(walletTransfers),
+  sourceTransfers: many(walletTransfers, { relationName: "sourceTransfers" }),
+  targetTransfers: many(walletTransfers, { relationName: "targetTransfers" }),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -86,9 +86,11 @@ export const walletTransfersRelations = relations(walletTransfers, ({ one }) => 
   sourceWallet: one(wallets, {
     fields: [walletTransfers.sourceId],
     references: [wallets.id],
+    relationName: "sourceTransfers",
   }),
   targetWallet: one(wallets, {
     fields: [walletTransfers.targetId],
     references: [wallets.id],
+    relationName: "targetTransfers",
   }),
 }));
