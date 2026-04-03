@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
 import { categories } from "@/db/schema";
+import { DEV_USER_ID } from "@/lib/dummy-user";
+import { eq } from "drizzle-orm";
 
 // GET /api/categories - List all categories
 export async function GET() {
   try {
-    const allCategories = await db.select().from(categories).orderBy(categories.categoryName);
+    const allCategories = await db.select().from(categories)
+      .where(eq(categories.userId, DEV_USER_ID))
+      .orderBy(categories.categoryName);
     return NextResponse.json(allCategories);
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -33,14 +37,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newCategory = await db.insert(categories).values({
+    const [newCategory] = await db.insert(categories).values({
+      userId: DEV_USER_ID,
       categoryName,
       classification,
       icon,
       color,
     }).returning();
 
-    return NextResponse.json(newCategory[0], { status: 201 });
+    return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {
     console.error("Error creating category:", error);
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
