@@ -1,40 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
-import { 
-  Plus, 
-  Wallet, 
-  Tag, 
-  ChevronRight, 
-  Trash2, 
-  Edit3, 
-  Banknote, 
-  CreditCard, 
-  Coins 
-} from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Plus, Wallet, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-const initialWallets = [
-  { id: 1, name: "Bank BCA", type: "Bank", balance: "Rp 8.200.000", icon: Banknote, color: "text-blue-500 bg-blue-50" },
-  { id: 2, name: "Cash", type: "Physical", balance: "Rp 1.300.000", icon: Coins, color: "text-amber-500 bg-amber-50" },
-  { id: 3, name: "GoPay", type: "E-Wallet", balance: "Rp 3.000.000", icon: CreditCard, color: "text-emerald-500 bg-emerald-50" },
-];
-
-const initialCategories = [
-  { id: 1, name: "Food & Drink", type: "Expense", icon: Tag, color: "text-orange-500 bg-orange-50" },
-  { id: 2, name: "Transportation", type: "Expense", icon: Tag, color: "text-blue-500 bg-blue-50" },
-  { id: 3, name: "Income", type: "Income", icon: Tag, color: "text-emerald-500 bg-emerald-50" },
-  { id: 4, name: "Groceries", type: "Expense", icon: Tag, color: "text-indigo-500 bg-indigo-50" },
-];
+import { cn } from "@/lib/utils";
+import { useWallets } from "@/hooks/use-wallets";
+import { useCategories } from "@/hooks/use-categories";
+import { ManagementList } from "@/components/manage/ManagementList";
 
 export default function ManagePage() {
   const [activeTab, setActiveTab] = useState<"wallets" | "categories">("wallets");
+  const { wallets, isLoading: isLoadingWallets } = useWallets();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
+
+  const walletItems = useMemo(() => {
+    return wallets.map((w, idx) => ({
+      title: w.walletName,
+      subtitle: w.walletType,
+      value: w.balance,
+      icon: Wallet,
+      colorClass: getWalletColor(w.walletType),
+      delay: idx * 0.05
+    }));
+  }, [wallets]);
+
+  const categoryItems = useMemo(() => {
+    return categories.map((c, idx) => ({
+      title: c.categoryName,
+      subtitle: c.classification,
+      icon: Tag,
+      colorClass: c.classification === 'income' ? 'text-emerald-500 bg-emerald-50' : 'text-orange-500 bg-orange-50',
+      delay: idx * 0.05
+    }));
+  }, [categories]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -65,7 +63,9 @@ export default function ManagePage() {
         <div className="flex items-center justify-between px-2">
           <h3 className="text-2xl font-black tracking-tight capitalize">
             {activeTab} 
-            <span className="ml-2 text-sm font-medium text-muted-foreground">({activeTab === 'wallets' ? initialWallets.length : initialCategories.length})</span>
+            <span className="ml-2 text-sm font-medium text-muted-foreground">
+              ({activeTab === 'wallets' ? wallets.length : categories.length})
+            </span>
           </h3>
           <button className="p-3 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 active:scale-95 transition-all">
             <Plus className="w-6 h-6 stroke-[3px]" />
@@ -79,31 +79,11 @@ export default function ManagePage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex flex-col gap-4"
           >
             {activeTab === "wallets" ? (
-              initialWallets.map((wallet, idx) => (
-                <ManagementItem 
-                  key={wallet.id} 
-                  title={wallet.name}
-                  subtitle={wallet.type}
-                  value={wallet.balance}
-                  Icon={wallet.icon}
-                  color={wallet.color}
-                  delay={idx * 0.1}
-                />
-              ))
+              <ManagementList items={walletItems} isLoading={isLoadingWallets} />
             ) : (
-              initialCategories.map((cat, idx) => (
-                <ManagementItem 
-                  key={cat.id} 
-                  title={cat.name}
-                  subtitle={cat.type}
-                  Icon={cat.icon}
-                  color={cat.color}
-                  delay={idx * 0.1}
-                />
-              ))
+              <ManagementList items={categoryItems} isLoading={isLoadingCategories} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -112,54 +92,11 @@ export default function ManagePage() {
   );
 }
 
-function ManagementItem({ 
-  title, 
-  subtitle, 
-  value, 
-  Icon, 
-  color, 
-  delay 
-}: { 
-  title: string, 
-  subtitle: string, 
-  value?: string, 
-  Icon: React.ElementType, 
-  color: string,
-  delay: number
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      whileHover={{ y: -2, scale: 1.01 }}
-      className="flex items-center gap-4 p-5 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/20 hover:shadow-xl transition-all group cursor-pointer"
-    >
-      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", color)}>
-        <Icon className="w-6 h-6" />
-      </div>
-      
-      <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-lg tracking-tight mb-0.5 group-hover:text-primary transition-colors">{title}</h4>
-        <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{subtitle}</p>
-      </div>
-      
-      {value && (
-        <div className="text-right mr-4">
-          <p className="font-black text-lg tracking-tight text-slate-900">{value}</p>
-        </div>
-      )}
-      
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
-          <Edit3 className="w-5 h-5" />
-        </button>
-        <button className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all">
-          <Trash2 className="w-5 h-5" />
-        </button>
-      </div>
-      
-      <ChevronRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-primary transition-colors sm:hidden" />
-    </motion.div>
-  );
+function getWalletColor(type: string) {
+  switch (type.toLowerCase()) {
+    case 'bank': return 'text-blue-500 bg-blue-50';
+    case 'cash': return 'text-amber-500 bg-amber-50';
+    case 'e-wallet': return 'text-emerald-500 bg-emerald-50';
+    default: return 'text-primary bg-primary/10';
+  }
 }
