@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
 import { transactions, wallets, categories } from "@/db/schema";
+import { getSessionUserId } from "@core/utils/UserSession";
 import { eq, desc, and } from "drizzle-orm";
-import { DEV_USER_ID } from "@/lib/dummy-user";
 
-// GET /api/transactions - List all transactions with relations
 export async function GET() {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const allTransactions = await db
       .select({
         id: transactions.id,
@@ -24,43 +26,38 @@ export async function GET() {
       .from(transactions)
       .leftJoin(wallets, eq(transactions.walletId, wallets.id))
       .leftJoin(categories, eq(transactions.categoryId, categories.id))
-      .where(eq(transactions.userId, DEV_USER_ID))
+      .where(eq(transactions.userId, userId))
       .orderBy(desc(transactions.transactedAt));
 
     return NextResponse.json(allTransactions);
   } catch (error) {
     console.error("Error fetching transactions:", error);
-    return NextResponse.json({ error: "Failed to fetch transactions" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
   }
 }
 
-// POST /api/transactions - Create new transaction
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { walletId, categoryId, amount, transactedAt, memo } = body;
 
-    if (!walletId || !categoryId || !amount || !transactedAt) {
-      return NextResponse.json(
-        { error: "walletId, categoryId, amount, and transactedAt are required" },
-        { status: 400 }
-      );
+    if (!walletId || !categoryId || !amount) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Verify wallet exists and belongs to user
-    const [wallet] = await db.select().from(wallets).where(and(eq(wallets.id, walletId), eq(wallets.userId, DEV_USER_ID))).limit(1);
-    if (!wallet) {
-      return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
-    }
+    // Verify wallet
+    const [wallet] = await db.select().from(wallets).where(and(eq(wallets.id, walletId), eq(wallets.userId, userId))).limit(1);
+    if (!wallet) return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
 
-    // Verify category exists and belongs to user
-    const [category] = await db.select().from(categories).where(and(eq(categories.id, categoryId), eq(categories.userId, DEV_USER_ID))).limit(1);
-    if (!category) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
-    }
+    // Verify category
+    const [category] = await db.select().from(categories).where(and(eq(categories.id, categoryId), eq(categories.userId, userId))).limit(1);
+    if (!category) return NextResponse.json({ error: "Category not found" }, { status: 404 });
 
     const [newTransaction] = await db.insert(transactions).values({
-      userId: DEV_USER_ID,
+      userId,
       walletId,
       categoryId,
       amount,
@@ -68,7 +65,7 @@ export async function POST(request: NextRequest) {
       memo,
     }).returning();
 
-    // Update wallet balance based on transaction type
+    // Update balance
     const newBalance = category.classification === "income"
       ? String(parseFloat(wallet.balance || "0") + parseFloat(amount))
       : String(parseFloat(wallet.balance || "0") - parseFloat(amount));
@@ -78,6 +75,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newTransaction, { status: 201 });
   } catch (error) {
     console.error("Error creating transaction:", error);
-    return NextResponse.json({ error: "Failed to create transaction" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
 }

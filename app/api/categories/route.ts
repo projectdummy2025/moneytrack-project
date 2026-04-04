@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
 import { categories } from "@/db/schema";
-import { DEV_USER_ID } from "@/lib/dummy-user";
+import { getSessionUserId } from "@core/utils/UserSession";
 import { eq } from "drizzle-orm";
 
-// GET /api/categories - List all categories
 export async function GET() {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const allCategories = await db.select().from(categories)
-      .where(eq(categories.userId, DEV_USER_ID))
+      .where(eq(categories.userId, userId))
       .orderBy(categories.categoryName);
     return NextResponse.json(allCategories);
   } catch (error) {
@@ -17,28 +19,20 @@ export async function GET() {
   }
 }
 
-// POST /api/categories - Create new category
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { categoryName, classification, icon, color } = body;
 
     if (!categoryName || !classification) {
-      return NextResponse.json(
-        { error: "categoryName and classification are required" },
-        { status: 400 }
-      );
-    }
-
-    if (!["income", "expense"].includes(classification)) {
-      return NextResponse.json(
-        { error: "classification must be 'income' or 'expense'" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
     const [newCategory] = await db.insert(categories).values({
-      userId: DEV_USER_ID,
+      userId,
       categoryName,
       classification,
       icon,
@@ -48,6 +42,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {
     console.error("Error creating category:", error);
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
 }

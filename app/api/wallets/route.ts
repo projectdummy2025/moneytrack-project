@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
 import { wallets } from "@/db/schema";
-import { DEV_USER_ID } from "@/lib/dummy-user";
+import { getSessionUserId } from "@core/utils/UserSession";
 import { eq } from "drizzle-orm";
 
-// GET /api/wallets - List all wallets
 export async function GET() {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const allWallets = await db.select().from(wallets)
-      .where(eq(wallets.userId, DEV_USER_ID))
+      .where(eq(wallets.userId, userId))
       .orderBy(wallets.createdAt);
     return NextResponse.json(allWallets);
   } catch (error) {
@@ -17,23 +19,20 @@ export async function GET() {
   }
 }
 
-// POST /api/wallets - Create new wallet (balance always starts at 0)
-// To add initial balance, create a transaction after wallet is created
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { walletName, walletType, currencyCode = "IDR" } = body;
 
     if (!walletName || !walletType) {
-      return NextResponse.json(
-        { error: "walletName and walletType are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Wallet selalu dimulai dengan balance 0
     const [newWallet] = await db.insert(wallets).values({
-      userId: DEV_USER_ID,
+      userId,
       walletName,
       walletType,
       balance: "0",
@@ -43,6 +42,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newWallet, { status: 201 });
   } catch (error) {
     console.error("Error creating wallet:", error);
-    return NextResponse.json({ error: "Failed to create wallet" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
 }
