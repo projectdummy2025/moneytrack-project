@@ -3,21 +3,42 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar as CalendarIcon, Wallet, Tag, ArrowRight } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from "@/lib/utils";
+import { useWallets } from "@/hooks/use-wallets";
+import { useCategories } from "@/hooks/use-categories";
 
 interface AddTransactionDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function AddTransactionDrawer({ isOpen, onClose }: AddTransactionDrawerProps) {
+export function AddTransactionDrawer({ isOpen, onClose, onSuccess }: AddTransactionDrawerProps) {
+  const { wallets, isLoading: isLoadingWallets } = useWallets();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
+
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"expense" | "income">("expense");
+  const [selectedWalletId, setSelectedWalletId] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [memo, setMemo] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set default wallet and category when loaded
+  useEffect(() => {
+    if (wallets.length > 0 && !selectedWalletId) {
+      setSelectedWalletId(wallets[0].id);
+    }
+  }, [wallets, selectedWalletId]);
+
+  useEffect(() => {
+    const filteredCategories = categories.filter(c => c.classification === type);
+    if (filteredCategories.length > 0) {
+      setSelectedCategoryId(filteredCategories[0].id);
+    } else {
+      setSelectedCategoryId("");
+    }
+  }, [type, categories]);
 
   // Prevent background scroll when open
   useEffect(() => {
@@ -30,6 +51,47 @@ export function AddTransactionDrawer({ isOpen, onClose }: AddTransactionDrawerPr
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  const handleSubmit = async () => {
+    if (!amount || !selectedWalletId || !selectedCategoryId) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          walletId: selectedWalletId,
+          categoryId: selectedCategoryId,
+          memo,
+          transactedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create transaction");
+      }
+
+      onSuccess?.();
+      onClose();
+      // Reset form
+      setAmount("");
+      setMemo("");
+    } catch (error) {
+      console.error(error);
+      alert("Error creating transaction");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredCategories = categories.filter(c => c.classification === type);
+  const selectedWallet = wallets.find(w => w.id === selectedWalletId);
+  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
 
   return (
     <AnimatePresence>
@@ -50,7 +112,7 @@ export function AddTransactionDrawer({ isOpen, onClose }: AddTransactionDrawerPr
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-[3rem] shadow-2xl p-8 pb-12 sm:max-w-2xl sm:mx-auto sm:bottom-12 sm:rounded-[3rem]"
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-[3rem] shadow-2xl p-8 pb-12 sm:max-w-2xl sm:mx-auto sm:bottom-12 sm:rounded-[3rem] max-h-[90vh] overflow-y-auto"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
@@ -102,37 +164,63 @@ export function AddTransactionDrawer({ isOpen, onClose }: AddTransactionDrawerPr
                 </div>
               </div>
 
+              {/* Memo Input */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-4">Memo (Optional)</label>
+                <input 
+                  type="text"
+                  placeholder="What was this for?"
+                  value={memo}
+                  onChange={(e) => setMemo(e.target.value)}
+                  className="w-full px-8 py-4 rounded-2xl bg-muted border-none text-base font-bold tracking-tight focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                />
+              </div>
+
               {/* Specific Field Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <SelectButton icon={Wallet} label="Source Wallet" value="Bank BCA" />
-                <SelectButton icon={Tag} label="Category" value="Food & Drink" />
-                <SelectButton icon={CalendarIcon} label="Date" value="Today, 04 April" />
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Wallet</label>
+                  <select 
+                    value={selectedWalletId}
+                    onChange={(e) => setSelectedWalletId(e.target.value)}
+                    className="w-full p-4 rounded-2xl bg-muted border-none font-bold text-sm focus:ring-2 focus:ring-primary/10 outline-none appearance-none"
+                  >
+                    {wallets.map(w => (
+                      <option key={w.id} value={w.id}>{w.walletName}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Category</label>
+                  <select 
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="w-full p-4 rounded-2xl bg-muted border-none font-bold text-sm focus:ring-2 focus:ring-primary/10 outline-none appearance-none"
+                  >
+                    {filteredCategories.map(c => (
+                      <option key={c.id} value={c.id}>{c.categoryName}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Submit Button */}
               <button 
-                onClick={onClose}
-                className="w-full mt-6 py-6 rounded-[2.5rem] bg-primary text-white text-xl font-black tracking-tight shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={cn(
+                  "w-full mt-6 py-6 rounded-[2.5rem] bg-primary text-white text-xl font-black tracking-tight shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-3 group",
+                  isSubmitting && "opacity-50 cursor-not-allowed"
+                )}
               >
-                Record Now
-                <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
+                {isSubmitting ? "Recording..." : "Record Now"}
+                {!isSubmitting && <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />}
               </button>
             </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
-  );
-}
-
-function SelectButton({ icon: Icon, label, value }: { icon: any, label: string, value: string }) {
-  return (
-    <button className="flex flex-col items-start gap-1 p-5 rounded-[2rem] bg-muted hover:bg-muted/80 transition-all text-left border border-transparent hover:border-primary/20 group">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
-      </div>
-      <p className="font-bold text-base tracking-tight truncate w-full">{value}</p>
-    </button>
   );
 }

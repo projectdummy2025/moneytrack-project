@@ -3,8 +3,34 @@
 import React from "react";
 import { ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
+import { Wallet as WalletType } from "@/types";
+import { formatCurrency, formatCompactNumber } from "@/lib/utils";
 
-export function BalanceCard() {
+interface OverviewProps {
+  totalBalance: number;
+  totalIncome: number;
+  totalExpense: number;
+  wallets: WalletType[];
+  isLoading?: boolean;
+}
+
+export function Overview({ 
+  totalBalance, 
+  totalIncome, 
+  totalExpense, 
+  wallets, 
+  isLoading 
+}: OverviewProps) {
+  if (isLoading) {
+    return <div className="animate-pulse flex flex-col gap-6">
+      <div className="h-48 bg-muted rounded-[2.5rem]" />
+      <div className="h-8 w-32 bg-muted rounded mx-2" />
+      <div className="flex gap-4 overflow-hidden">
+        {[1, 2, 3].map(i => <div key={i} className="min-w-[200px] h-40 bg-muted rounded-[2rem]" />)}
+      </div>
+    </div>;
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Total Balance */}
@@ -16,7 +42,7 @@ export function BalanceCard() {
             animate={{ scale: 1, opacity: 1 }}
             className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-8"
           >
-            Rp 12.500.000
+            {formatCurrency(totalBalance)}
           </motion.h2>
           
           <div className="grid grid-cols-2 gap-4">
@@ -26,7 +52,7 @@ export function BalanceCard() {
               </div>
               <div>
                 <p className="text-xs text-white/70">Income</p>
-                <p className="font-bold">Rp 8.0M</p>
+                <p className="font-bold">{formatCompactNumber(totalIncome)}</p>
               </div>
             </div>
             
@@ -36,7 +62,7 @@ export function BalanceCard() {
               </div>
               <div>
                 <p className="text-xs text-white/70">Expense</p>
-                <p className="font-bold">Rp 3.5M</p>
+                <p className="font-bold">{formatCompactNumber(totalExpense)}</p>
               </div>
             </div>
           </div>
@@ -59,12 +85,27 @@ export function BalanceCard() {
 
       {/* Horizontal Wallet Carousel */}
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
-        <WalletItem name="Bank BCA" balance="Rp 8.200.000" type="Bank" color="bg-blue-500" />
-        <WalletItem name="Cash" balance="Rp 1.300.000" type="Cash" color="bg-amber-500" />
-        <WalletItem name="GoPay" balance="Rp 3.000.000" type="E-Wallet" color="bg-emerald-500" />
+        {wallets.map((wallet) => (
+          <WalletItem 
+            key={wallet.id} 
+            name={wallet.walletName} 
+            balance={formatCurrency(wallet.balance)} 
+            type={wallet.walletType} 
+            color={getWalletColor(wallet.walletType)} 
+          />
+        ))}
       </div>
     </div>
   );
+}
+
+function getWalletColor(type: string) {
+  switch (type.toLowerCase()) {
+    case 'bank': return 'bg-blue-500';
+    case 'cash': return 'bg-amber-500';
+    case 'e-wallet': return 'bg-emerald-500';
+    default: return 'bg-primary';
+  }
 }
 
 function WalletItem({ name, balance, type, color }: { name: string, balance: string, type: string, color: string }) {
@@ -77,7 +118,7 @@ function WalletItem({ name, balance, type, color }: { name: string, balance: str
         <Wallet className="w-6 h-6" />
       </div>
       <div>
-        <p className="text-sm text-muted-foreground font-medium">{type}</p>
+        <p className="text-sm text-muted-foreground font-medium capitalize">{type}</p>
         <h4 className="font-bold text-lg leading-tight mb-1">{name}</h4>
       </div>
       <p className="text-xl font-extrabold tracking-tight mt-2">{balance}</p>
