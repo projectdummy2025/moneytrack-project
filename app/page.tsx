@@ -18,7 +18,7 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-2 font-['Urbanist',sans-serif]">
       <PulseBoard 
         totalBalance={brain.state.totals.totalBalance}
         totalIncome={brain.state.totals.totalIncome}
@@ -32,15 +32,15 @@ export default function DashboardPage() {
         isLoading={brain.state.isLoading}
       />
 
-      {/* Floating Action Button - Minimalist */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
+      {/* Floating Action Button - Mobile App Style */}
+      <div className="fixed bottom-24 right-6 z-40">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => brain.actions.setIsDrawerOpen(true)}
-          className="w-14 h-14 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center transition-all active:bg-primary/90"
+          className="w-14 h-14 bg-accent text-white rounded-2xl shadow-lg shadow-accent/20 flex items-center justify-center transition-all active:bg-accent/90 border border-white/20"
         >
-          <Plus className="w-8 h-8 stroke-[3px]" />
+          <Plus className="w-7 h-7 stroke-[3px]" />
         </motion.button>
       </div>
 
