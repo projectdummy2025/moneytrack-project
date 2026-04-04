@@ -18,7 +18,7 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="flex flex-col gap-8 pb-20">
+    <div className="flex flex-col gap-10">
       <PulseBoard 
         totalBalance={brain.state.totals.totalBalance}
         totalIncome={brain.state.totals.totalIncome}
@@ -32,25 +32,15 @@ export default function DashboardPage() {
         isLoading={brain.state.isLoading}
       />
 
-      {/* Floating UI Elements */}
-      <motion.button
-         whileHover={{ scale: 1.1 }}
-         whileTap={{ scale: 0.9 }}
-         onClick={() => brain.actions.setIsDrawerOpen(true)}
-         className="sm:hidden fixed bottom-24 right-6 z-40 bg-primary text-white p-4 rounded-2xl shadow-xl shadow-primary/40 flex items-center justify-center"
-      >
-        <Plus className="w-6 h-6 stroke-[3px]" />
-      </motion.button>
-
-      <div className="hidden sm:block fixed bottom-8 right-8 z-40">
+      {/* Floating Action Button - Minimalist */}
+      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
         <motion.button
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => brain.actions.setIsDrawerOpen(true)}
-          className="bg-primary text-white px-6 py-4 rounded-[2rem] shadow-xl shadow-primary/30 flex items-center gap-3 font-bold"
+          className="w-14 h-14 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center transition-all active:bg-primary/90"
         >
-          <Plus className="w-5 h-5 stroke-[3px]" />
-          New Transaction
+          <Plus className="w-8 h-8 stroke-[3px]" />
         </motion.button>
       </div>
 

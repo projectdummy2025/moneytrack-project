@@ -20,39 +20,41 @@ export function MainLayout({ children }: AppLayoutProps) {
   const title = pageTitles[pathname] || "MoneyTrack";
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-500">
-      <NavSider />
-
-      {/* Main Content Area */}
-      <main className="sm:ml-20 lg:ml-64 flex flex-col min-h-screen">
-        {/* Mobile Header */}
-        <header className="sm:hidden glass sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
-          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
-            <span className="text-xs font-bold text-primary">JD</span>
-          </div>
-        </header>
-
-        {/* Content Wrapper with animation */}
-        <div className="flex-1 px-4 sm:px-8 py-4 sm:py-8 pb-32 sm:pb-8 max-w-5xl mx-auto w-full scrollbar-hide">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+    <div className="min-h-screen bg-background flex flex-col transition-colors duration-500 overflow-x-hidden">
+      {/* Header - Fixed & Immersive */}
+      <header className="glass fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between pointer-events-auto">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-primary tracking-[0.2em] uppercase opacity-80">MoneyTrack</span>
+          <h1 className="text-xl font-black tracking-tight text-foreground">{title}</h1>
         </div>
+        <div className="w-10 h-10 rounded-2xl bg-muted border border-border flex items-center justify-center overflow-hidden">
+          <div className="w-full h-full bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-primary font-black text-sm">
+            JD
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area - Responsive Container */}
+      <main className="flex-1 w-full max-w-xl mx-auto px-6 pt-24 pb-32">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
+
+      {/* Floating Bottom Nav - Viewport Fixed */}
+      <NavSider />
       
-      {/* Background Decorator */}
-      <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="fixed bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full pointer-events-none sm:left-64" />
+      {/* Ambient background glow */}
+      <div className="fixed top-0 right-0 -z-10 w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
     </div>
   );
 }
