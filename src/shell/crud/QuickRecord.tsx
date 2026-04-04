@@ -39,111 +39,130 @@ export function QuickRecord({ isOpen, onClose, state, actions }: QuickRecordProp
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm"
           />
 
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-[3rem] shadow-2xl p-8 pb-12 sm:max-w-2xl sm:mx-auto sm:bottom-12 sm:rounded-[3rem] max-h-[90vh] overflow-y-auto"
+            transition={{ type: "tween", ease: "easeOut", duration: 0.4 }}
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-card rounded-t-[2.5rem] border-t border-border shadow-2xl flex flex-col max-h-[95vh] w-full max-w-xl mx-auto"
           >
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-black tracking-tight">New Transaction</h3>
-              <button 
-                onClick={onClose}
-                className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-all font-bold"
-              >
-                <X className="w-6 h-6 stroke-[3px]" />
-              </button>
+            {/* Minimal Handle */}
+            <div className="w-full flex justify-center py-5">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
             </div>
 
-            <div className="flex p-1 bg-muted rounded-2xl mb-8 border border-border/50">
-              <button
-                onClick={() => actions.setType("expense")}
-                className={cn(
-                  "flex-1 py-3 rounded-xl text-sm font-bold transition-all",
-                  state.type === "expense" ? "bg-red-500 text-white shadow-lg shadow-red-200" : "text-muted-foreground"
-                )}
-              >
-                Expense
-              </button>
-              <button
-                onClick={() => actions.setType("income")}
-                className={cn(
-                  "flex-1 py-3 rounded-xl text-sm font-bold transition-all",
-                  state.type === "income" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200" : "text-muted-foreground"
-                )}
-              >
-                Income
-              </button>
-            </div>
+            <div className="px-6 pb-10 flex flex-col gap-8 overflow-y-auto scrollbar-hide">
+              {/* Type Switcher & Close */}
+              <div className="flex items-center justify-between">
+                <div className="flex bg-muted/50 p-1 rounded-2xl">
+                  <button 
+                    onClick={() => actions.setType("expense")}
+                    className={cn(
+                      "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                      state.type === "expense" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/50"
+                    )}
+                  >
+                    Expense
+                  </button>
+                  <button 
+                    onClick={() => actions.setType("income")}
+                    className={cn(
+                      "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                      state.type === "income" ? "bg-background text-emerald-500 shadow-sm" : "text-muted-foreground/50"
+                    )}
+                  >
+                    Income
+                  </button>
+                </div>
+                <button 
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground"
+                >
+                  <X className="w-5 h-5 stroke-[3px]" />
+                </button>
+              </div>
 
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-4">Amount</label>
-                <div className="relative group">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-muted-foreground group-focus-within:text-primary transition-colors">Rp</span>
+              {/* Immersive Amount Input */}
+              <div className="flex flex-col items-center py-6 gap-2">
+                <div className="relative flex items-center justify-center w-full">
+                  <span className="text-xl font-black text-muted-foreground/30 absolute left-2 opacity-50 uppercase tracking-widest">IDR</span>
                   <input 
                     type="number"
+                    autoFocus
                     placeholder="0"
                     value={state.amount}
                     onChange={(e) => actions.setAmount(e.target.value)}
-                    className="w-full pl-16 pr-8 py-6 rounded-[2.5rem] bg-muted border-none text-3xl font-black tracking-tight focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                    className="w-full bg-transparent text-center text-7xl font-black tracking-tighter outline-none placeholder:text-muted/20 py-2 selection:bg-primary/20"
                   />
                 </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-4">Memo (Optional)</label>
                 <input 
                   type="text"
-                  placeholder="What was this for?"
+                  placeholder="Record note..."
                   value={state.memo}
                   onChange={(e) => actions.setMemo(e.target.value)}
-                  className="w-full px-8 py-4 rounded-2xl bg-muted border-none text-base font-bold tracking-tight focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                  className="w-full text-center text-sm font-bold text-muted-foreground outline-none bg-transparent"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Wallet</label>
-                  <select 
-                    value={state.selectedWalletId}
-                    onChange={(e) => actions.setSelectedWalletId(e.target.value)}
-                    className="w-full p-4 rounded-2xl bg-muted border-none font-bold text-sm focus:ring-2 focus:ring-primary/10 outline-none appearance-none"
-                  >
-                    {state.wallets.map(w => (
-                      <option key={w.id} value={w.id}>{w.walletName}</option>
+              {/* Selector Sections */}
+              <div className="flex flex-col gap-10">
+                {/* Wallet Horizontal Pills */}
+                <div className="flex flex-col gap-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Paid With</p>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                    {state.wallets.map((wallet) => (
+                      <button
+                        key={wallet.id}
+                        onClick={() => actions.setSelectedWalletId(wallet.id)}
+                        className={cn(
+                          "px-6 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-black",
+                          state.selectedWalletId === wallet.id 
+                            ? "bg-foreground text-background border-foreground shadow-lg" 
+                            : "bg-muted/30 border-border/50 text-muted-foreground"
+                        )}
+                      >
+                        {wallet.walletName}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-2">Category</label>
-                  <select 
-                    value={state.selectedCategoryId}
-                    onChange={(e) => actions.setSelectedCategoryId(e.target.value)}
-                    className="w-full p-4 rounded-2xl bg-muted border-none font-bold text-sm focus:ring-2 focus:ring-primary/10 outline-none appearance-none"
-                  >
-                    {state.filteredCategories.map(c => (
-                      <option key={c.id} value={c.id}>{c.categoryName}</option>
+                {/* Category Horizontal Pills */}
+                <div className="flex flex-col gap-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 ml-1">Category</p>
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                    {state.filteredCategories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => actions.setSelectedCategoryId(cat.id)}
+                        className={cn(
+                          "px-6 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-black",
+                          state.selectedCategoryId === cat.id 
+                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                            : "bg-muted/30 border-border/50 text-muted-foreground"
+                        )}
+                      >
+                        {cat.categoryName}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
 
+              {/* Sticky-like Action Button */}
               <button 
                 onClick={actions.handleSubmit}
-                disabled={state.isSubmitting}
+                disabled={state.isSubmitting || !state.amount}
                 className={cn(
-                  "w-full mt-6 py-6 rounded-[2.5rem] bg-primary text-white text-xl font-black tracking-tight shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-3 group",
-                  state.isSubmitting && "opacity-50 cursor-not-allowed"
+                  "w-full py-6 rounded-3xl bg-foreground text-background text-lg font-black tracking-widest uppercase shadow-2xl active:scale-95 transition-all mt-4 mb-2 flex items-center justify-center gap-3",
+                  (state.isSubmitting || !state.amount) && "opacity-20 cursor-not-allowed grayscale"
                 )}
               >
-                {state.isSubmitting ? "Recording..." : "Record Now"}
-                {!state.isSubmitting && <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />}
+                {state.isSubmitting ? "Saving..." : "Add Record"}
+                {!state.isSubmitting && <ArrowRight className="w-6 h-6 stroke-[3px]" />}
               </button>
             </div>
           </motion.div>
