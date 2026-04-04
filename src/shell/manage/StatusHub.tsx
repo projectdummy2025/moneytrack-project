@@ -21,14 +21,14 @@ interface StatusHubProps {
 
 export function StatusHub({ state, actions }: StatusHubProps) {
   return (
-    <div className="flex flex-col gap-8">
-      {/* 1. Tab Switcher - Premium Segmented Control */}
-      <div className="flex p-1 bg-muted/40 rounded-[2rem] border border-border/40 backdrop-blur-sm self-center w-full max-w-sm">
+    <div className="flex flex-col gap-8 font-['Urbanist',sans-serif]">
+      {/* Tab Switcher */}
+      <div className="flex p-1 bg-secondary rounded-2xl border border-border/50 self-center w-full max-w-[320px]">
         <button
           onClick={() => actions.setActiveTab("wallets")}
           className={cn(
-            "flex-1 py-3 px-6 rounded-2xl text-[10px] uppercase font-black tracking-widest transition-all duration-500",
-            state.activeTab === 'wallets' ? "bg-background text-primary shadow-xl shadow-black/5" : "text-muted-foreground hover:text-foreground"
+            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            state.activeTab === 'wallets' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           Wallets
@@ -36,35 +36,37 @@ export function StatusHub({ state, actions }: StatusHubProps) {
         <button
           onClick={() => actions.setActiveTab("categories")}
           className={cn(
-            "flex-1 py-3 px-6 rounded-2xl text-[10px] uppercase font-black tracking-widest transition-all duration-500",
-            state.activeTab === 'categories' ? "bg-background text-primary shadow-xl shadow-black/5" : "text-muted-foreground hover:text-foreground"
+            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            state.activeTab === 'categories' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           Categories
         </button>
       </div>
 
-      {/* 2. List Section */}
-      <div className="flex flex-col gap-6 pb-28 px-1">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
-            {state.activeTab} 
-            <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full uppercase tracking-widest leading-none">
+      {/* List Section */}
+      <div className="flex flex-col gap-6 pb-24">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-foreground capitalize">
+              {state.activeTab} 
+            </h3>
+            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-bold">
               {state.itemCount}
             </span>
-          </h3>
-          <button className="w-12 h-12 rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
-            <Plus className="w-6 h-6 stroke-[3px]" />
+          </div>
+          <button className="w-10 h-10 rounded-xl bg-accent text-white shadow-md shadow-accent/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+            <Plus className="w-5 h-5 stroke-[3px]" />
           </button>
         </div>
 
         <AnimatePresence mode="wait">
           <motion.div
             key={state.activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, x: state.activeTab === 'wallets' ? -10 : 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: state.activeTab === 'wallets' ? 10 : -10 }}
+            transition={{ duration: 0.2 }}
           >
             {state.activeTab === "wallets" ? (
               <MasterRegistry items={state.walletItems} isLoading={state.isLoading} />
