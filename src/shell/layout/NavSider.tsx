@@ -10,10 +10,12 @@ import {
   Plus, 
   Wallet,
   TrendingUp,
-  PieChart
+  PieChart,
+  LogOut
 } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
 import { motion } from "framer-motion";
+import { useAuthVault } from "@core/hooks/AuthVault";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/" },
@@ -23,6 +25,7 @@ const navItems = [
 
 export function NavSider() {
   const pathname = usePathname();
+  const { actions } = useAuthVault();
 
   return (
     <>
@@ -65,11 +68,14 @@ export function NavSider() {
         </nav>
 
         <div className="p-6 border-t border-border/50">
-           <div className="flex items-center gap-3 p-2 rounded-2xl hover:bg-muted transition-colors cursor-pointer group">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">JD</div>
+           <div 
+             onClick={actions.clearSession}
+             className="flex items-center gap-3 p-2 rounded-2xl hover:bg-red-50 text-foreground hover:text-red-600 transition-colors cursor-pointer group"
+           >
+              <div className="w-10 h-10 rounded-full bg-indigo-100 group-hover:bg-red-100 flex items-center justify-center text-indigo-600 group-hover:text-red-600 font-bold">JD</div>
               <div className="hidden lg:block">
-                <p className="text-sm font-bold text-foreground leading-none mb-1">John Doe</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Premium Plan</p>
+                <p className="text-sm font-bold leading-none mb-1">Logout</p>
+                <p className="text-[10px] font-medium opacity-70">Premium Plan</p>
               </div>
            </div>
         </div>
@@ -93,6 +99,14 @@ export function NavSider() {
             </Link>
           );
         })}
+        {/* Mobile Logout */}
+        <button 
+          onClick={actions.clearSession}
+          className="flex flex-col items-center gap-1 text-muted-foreground"
+        >
+          <LogOut className="w-6 h-6 stroke-2" />
+          <span className="text-[10px] font-bold tracking-tight">Exit</span>
+        </button>
       </nav>
     </>
   );
