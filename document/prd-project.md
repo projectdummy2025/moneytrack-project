@@ -50,8 +50,11 @@ Individu yang ingin mengelola keuangan pribadi dengan lebih disiplin dan terorga
 - **Autentikasi:** NextAuth.js (Auth.js) atau Clerk.
 - **Visualisasi:** Recharts atau Chart.js untuk grafik finansial.
 
-## 7. Future Roadmap
-- Pencatatan hutang/piutang.
-- Fitur anggaran (Budgeting) bulanan dengan notifikasi jika melebihi limit.
-- Ekspor data ke CSV/Excel.
-- Rekonsiliasi otomatis via upload mutasi bank (PDF/CSV).
+## 8. Naming Convention Standard (The "Lugas & Memorable" Rule)
+Untuk menjaga skalabilitas dan kejelasan maksud kode, setiap file wajib mengikuti aturan penamaan berikut:
+- **Specific Items (Complex/Feature-heavy):** Wajib menggunakan gabungan **2 kata** yang lugas dan berani (Contoh: `WalletVault.ts`, `PulseBoard.tsx`, `FlowMaster.ts`).
+- **Simple Items (Generic/Single-purpose):** Cukup **1 kata** yang lugas dan kuat (Contoh: `Button.tsx`, `Icon.tsx`, `Layout.tsx`).
+- **Separation Concept (Strict):**
+    - **Core (Brain):** File `.ts`. Berisi `Custom Hooks` yang mengelola state, API calls, dan algoritma. Dilarang ada JSX.
+    - **Shell (Body):** File `.tsx`. Berisi `Presentational Components`. Dilarang ada `useState`, `useEffect`, atau fungsi async. Hanya menerima `props` dan merender UI.
+    - **Map (Bridge):** Folder `app/`. Hanya memanggil Hook dari Core dan melemparkannya ke Shell.
