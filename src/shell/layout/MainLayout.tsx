@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Navbar } from "./Navbar";
+import { NavSider } from "./NavSider";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -15,13 +15,13 @@ const pageTitles: Record<string, string> = {
   "/manage": "Manage Accounts",
 };
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function MainLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const title = pageTitles[pathname] || "MoneyTrack";
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-500">
-      <Navbar />
+      <NavSider />
 
       {/* Main Content Area */}
       <main className="sm:ml-20 lg:ml-64 flex flex-col min-h-screen">
