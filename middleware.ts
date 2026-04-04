@@ -5,8 +5,8 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get("moneytrack_session");
   const { pathname } = request.nextUrl;
 
-  // Izinkan akses ke login dan API auth tanpa session
-  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
+  // Izinkan akses ke login, register, dan API auth tanpa session
+  if (pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
