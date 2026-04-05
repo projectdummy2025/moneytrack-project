@@ -47,7 +47,7 @@ export function QuickRecord({ isOpen, onClose, state, actions }: QuickRecordProp
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-[2rem] shadow-2xl flex flex-col max-h-[92vh] w-full max-w-xl mx-auto overflow-hidden font-['Urbanist',sans-serif]"
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] bg-background rounded-t-[2rem] shadow-2xl flex flex-col max-h-[92vh] w-full max-w-[430px] overflow-hidden font-['Urbanist',sans-serif]"
           >
             {/* Handle */}
             <div className="w-full flex justify-center py-3">
