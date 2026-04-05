@@ -11,24 +11,32 @@ export function useLoginLogic() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
+    if (isLoading) return;
     setIsLoading(true);
 
     try {
+      const payload = { 
+        email: email.trim(), 
+        password: password.trim() 
+      };
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" }
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
-      Cookies.set("moneytrack_session", data.userId, { expires: 7 });
+      // Set cookie di client side juga sebagai cadangan
+      Cookies.set("moneytrack_session", data.userId, { expires: 7, path: '/' });
+      
+      // Redirect paksa secara halus
       router.push("/");
     } catch (err: any) {
-      alert(err.message);
+      throw err; // Lempar ke UI agar localError muncul
     } finally {
       setIsLoading(false);
     }
