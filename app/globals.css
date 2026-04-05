@@ -85,6 +85,15 @@
     font-family: 'Urbanist', sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    /* Mencegah overscroll bounce yang mengganggu di mobile */
+    overscroll-behavior-y: none;
+  }
+
+  button, a {
+    /* Menghilangkan delay 300ms di mobile */
+    touch-action: manipulation;
+    cursor: pointer;
+    user-select: none;
   }
 
   input::placeholder {
