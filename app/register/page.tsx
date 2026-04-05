@@ -31,7 +31,7 @@ export default function RegisterPage() {
         Hello! Register to get started
       </h1>
 
-      <form method="POST" onSubmit={handleRegisterAction} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 relative z-10 w-full">
         {localError && (
           <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-medium">
             <AlertCircle size={18} />
@@ -45,7 +45,7 @@ export default function RegisterPage() {
           autoComplete="username"
           value={state.username}
           onChange={(e) => actions.setUsername(e.target.value)}
-          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] relative z-10"
         />
 
         <input
@@ -55,10 +55,10 @@ export default function RegisterPage() {
           autoComplete="email"
           value={state.email}
           onChange={(e) => actions.setEmail(e.target.value)}
-          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] relative z-10"
         />
 
-        <div className="relative">
+        <div className="relative w-full">
           <input
             type={state.showPassword ? "text" : "password"}
             name="password"
@@ -66,18 +66,19 @@ export default function RegisterPage() {
             autoComplete="new-password"
             value={state.password}
             onChange={(e) => actions.setPassword(e.target.value)}
-            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 pr-14 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] relative z-10"
           />
           <button
             type="button"
-            onClick={() => actions.setShowPassword(!state.showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#8391a1]"
+            onClick={(e) => { e.preventDefault(); actions.setShowPassword(!state.showPassword); }}
+            onPointerDown={(e) => { e.preventDefault(); actions.setShowPassword(!state.showPassword); }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-[#8391a1] hover:text-[#1e232c] z-50 transition-colors"
           >
-            {state.showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {state.showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
           </button>
         </div>
 
-        <div className="relative">
+        <div className="relative w-full">
           <input
             type={state.showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
@@ -85,21 +86,23 @@ export default function RegisterPage() {
             autoComplete="new-password"
             value={state.confirmPassword}
             onChange={(e) => actions.setConfirmPassword(e.target.value)}
-            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 pr-14 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] relative z-10"
           />
           <button
             type="button"
-            onClick={() => actions.setShowConfirmPassword(!state.showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#8391a1]"
+            onClick={(e) => { e.preventDefault(); actions.setShowConfirmPassword(!state.showConfirmPassword); }}
+            onPointerDown={(e) => { e.preventDefault(); actions.setShowConfirmPassword(!state.showConfirmPassword); }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-[#8391a1] hover:text-[#1e232c] z-50 transition-colors"
           >
-            {state.showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {state.showConfirmPassword ? <EyeOff size={22} /> : <Eye size={22} />}
           </button>
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleRegisterAction}
           disabled={state.isLoading}
-          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-[15px] transition-all mt-4 shadow-lg shadow-black/10 active:bg-[#2d3441] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center"
+          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-[15px] transition-all mt-4 shadow-lg shadow-black/10 active:bg-[#2d3441] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center relative z-50"
         >
           {state.isLoading ? (
             <div className="flex items-center gap-2">
@@ -110,7 +113,7 @@ export default function RegisterPage() {
             "Register"
           )}
         </button>
-      </form>
+      </div>
 
       <div className="mt-auto pb-6 text-center pt-10">
         <p className="text-[15px] text-[#1e232c]">

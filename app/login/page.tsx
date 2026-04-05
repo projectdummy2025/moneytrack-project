@@ -31,7 +31,7 @@ export default function LoginPage() {
         Welcome back! Glad to see you, Again!
       </h1>
 
-      <form method="POST" onSubmit={handleManualLogin} className="flex flex-col gap-4 relative z-10">
+      <div className="flex flex-col gap-4 relative z-10">
         {localError && (
           <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-medium">
             <AlertCircle size={18} />
@@ -46,10 +46,10 @@ export default function LoginPage() {
           autoComplete="email"
           value={state.email}
           onChange={(e) => actions.setEmail(e.target.value)}
-          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+          className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] z-10 relative"
         />
 
-        <div className="relative">
+        <div className="relative w-full">
           <input
             type={state.showPassword ? "text" : "password"}
             name="password"
@@ -57,27 +57,29 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={state.password}
             onChange={(e) => actions.setPassword(e.target.value)}
-            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c]"
+            className="w-full h-[56px] bg-[#f7f8f9] border border-[#e8ecf4] rounded-xl px-5 pr-14 outline-none focus:border-[#35c2c1] transition-colors font-medium text-[#1e232c] relative z-10"
           />
           <button
             type="button"
-            onClick={() => actions.setShowPassword(!state.showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#8391a1]"
+            onClick={(e) => { e.preventDefault(); actions.setShowPassword(!state.showPassword); }}
+            onPointerDown={(e) => { e.preventDefault(); actions.setShowPassword(!state.showPassword); }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-[#8391a1] hover:text-[#1e232c] z-50 transition-colors"
           >
-            {state.showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {state.showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
           </button>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pr-1">
           <Link href="/forgot-password" title="Forgot Password" className="text-[14px] font-semibold text-[#6a707c] no-underline">
             Forgot Password?
           </Link>
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleManualLogin}
           disabled={state.isLoading}
-          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-[15px] flex items-center justify-center transition-all mt-4 active:scale-95 disabled:opacity-50 relative z-20 shadow-lg shadow-black/10 active:bg-[#2d3441]"
+          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-[15px] flex items-center justify-center transition-all mt-4 active:scale-95 disabled:opacity-50 relative z-50 shadow-lg shadow-black/10 active:bg-[#2d3441]"
         >
           {state.isLoading ? (
             <div className="flex items-center gap-2">
@@ -88,7 +90,7 @@ export default function LoginPage() {
             "Login"
           )}
         </button>
-      </form>
+      </div>
 
       <div className="mt-auto pb-6 text-center pt-10">
         <p className="text-[15px] text-[#1e232c]">
