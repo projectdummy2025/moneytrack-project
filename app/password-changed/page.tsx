@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { AuthLayout } from "@shell/auth/AuthLayout";
 
 function SuccessCheckmark() {
   return (
@@ -23,55 +22,29 @@ export default function PasswordChangedPage() {
   const router = useRouter();
 
   return (
-    <AuthLayout>
-      <div className="flex-1 flex flex-col items-center justify-center py-16">
+    <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center w-full">
         {/* Checkmark */}
         <div className="mb-8">
           <SuccessCheckmark />
         </div>
 
         {/* Text */}
-        <h2
-          style={{
-            fontFamily: "Urbanist, sans-serif",
-            fontWeight: 700,
-            fontSize: 26,
-            color: "#1e232c",
-            marginBottom: 12,
-            textAlign: "center",
-          }}
-        >
+        <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 text-center">
           Password Changed!
-        </h2>
-        <p
-          style={{
-            fontFamily: "Urbanist, sans-serif",
-            fontWeight: 500,
-            fontSize: 15,
-            color: "#8391a1",
-            lineHeight: 1.5,
-            textAlign: "center",
-            maxWidth: 226,
-            marginBottom: 48,
-          }}
-        >
+        </h1>
+        <p className="text-[16px] font-medium text-[#8391a1] leading-relaxed mb-10 text-center max-w-[280px]">
           Your password has been changed successfully.
         </p>
 
         {/* Back to Login Button */}
         <button
           onClick={() => router.push("/login")}
-          className="w-full h-[56px] bg-[#1e232c] rounded-[8px] flex items-center justify-center cursor-pointer hover:bg-[#2d3441] transition-colors"
-          style={{
-            fontFamily: "Urbanist, sans-serif",
-            fontWeight: 600,
-            fontSize: 15,
-            color: "white",
-          }}
+          className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
         >
           Back to Login
         </button>
       </div>
-    </AuthLayout>
+    </div>
   );
 }
