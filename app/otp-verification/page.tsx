@@ -2,8 +2,6 @@
 
 import React, { useState, useRef, KeyboardEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { AuthLayout } from "@shell/auth/AuthLayout";
-import { BackButton } from "@shell/auth/BackButton";
 
 export default function OtpVerificationPage() {
   const router = useRouter();
@@ -39,35 +37,12 @@ export default function OtpVerificationPage() {
   };
 
   return (
-    <AuthLayout>
-      <div className="mt-9">
-        <BackButton to="/forgot-password" />
-      </div>
-
+    <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto">
       {/* Title & Description */}
-      <h1
-        style={{
-          fontFamily: "Urbanist, sans-serif",
-          fontWeight: 700,
-          fontSize: 30,
-          color: "#1e232c",
-          lineHeight: 1.3,
-          letterSpacing: -0.3,
-          marginBottom: 12,
-        }}
-      >
+      <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 mt-10">
         OTP Verification
       </h1>
-      <p
-        style={{
-          fontFamily: "Urbanist, sans-serif",
-          fontWeight: 500,
-          fontSize: 16,
-          color: "#838ba1",
-          lineHeight: 1.5,
-          marginBottom: 36,
-        }}
-      >
+      <p className="text-[16px] font-medium text-[#838ba1] leading-relaxed mb-8">
         Enter the verification code we just sent on your email address.
       </p>
 
@@ -83,15 +58,11 @@ export default function OtpVerificationPage() {
             value={digit}
             onChange={(e) => handleChange(index, e)}
             onKeyDown={(e) => handleKeyDown(index, e)}
-            className="w-[46px] h-[56px] text-center rounded-[8px] outline-none transition-colors shrink-0"
-            style={{
-              fontFamily: "Urbanist, sans-serif",
-              fontWeight: 700,
-              fontSize: 20,
-              color: "#1e232c",
-              border: digit ? "1.5px solid #35c2c1" : "1px solid #e8ecf4",
-              background: digit ? "white" : "#f7f8f9",
-            }}
+            className={`w-[46px] h-[56px] text-center rounded-xl outline-none transition-all font-bold text-[20px] shrink-0 ${
+              digit 
+                ? "border-[1.5px] border-[#35c2c1] bg-white text-[#1e232c]" 
+                : "border border-[#e8ecf4] bg-[#f7f8f9] text-[#1e232c]"
+            }`}
           />
         ))}
       </div>
@@ -99,37 +70,23 @@ export default function OtpVerificationPage() {
       {/* Verify Button */}
       <button
         onClick={handleVerify}
-        className="w-full h-[56px] bg-[#1e232c] rounded-[8px] flex items-center justify-center cursor-pointer hover:bg-[#2d3441] transition-colors"
-        style={{
-          fontFamily: "Urbanist, sans-serif",
-          fontWeight: 600,
-          fontSize: 15,
-          color: "white",
-        }}
+        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
       >
         Verify
       </button>
 
       {/* Resend link */}
-      <div className="flex-1 flex items-end justify-center pb-4 mt-8">
-        <p style={{ fontFamily: "Urbanist, sans-serif", fontSize: 15, color: "#1e232c" }}>
-          <span style={{ fontWeight: 500 }}>Didn&apos;t received code? </span>
+      <div className="mt-auto pb-6 text-center pt-10">
+        <p className="text-[15px] text-[#1e232c] font-medium">
+          Didn&apos;t received code?{" "}
           <button
             onClick={() => {}}
-            style={{
-              fontWeight: 700,
-              color: "#35c2c1",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "Urbanist, sans-serif",
-              fontSize: 15,
-            }}
+            className="font-bold text-[#35c2c1] hover:underline"
           >
             Resend
           </button>
         </p>
       </div>
-    </AuthLayout>
+    </div>
   );
 }
