@@ -1,8 +1,20 @@
 import type { NextConfig } from "next";
 import os from "os";
 
+const getLocalIps = () => {
+  try {
+    return Object.values(os.networkInterfaces()).flat().map(i => i?.address || "").filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+};
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: Object.values(os.networkInterfaces()).flat().map(i => i?.address || "localhost:3000").filter(Boolean),
+  allowedDevOrigins: [
+    ...getLocalIps(),
+    "localhost",
+    "127.0.0.1"
+  ],
   async headers() {
     return [
       {
