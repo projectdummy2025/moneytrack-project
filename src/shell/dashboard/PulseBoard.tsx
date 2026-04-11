@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import { Wallet as WalletType } from "@core/types/DataCore";
 import { formatCurrency, formatCompactNumber } from "@core/utils/HelperTool";
@@ -22,106 +22,94 @@ export function PulseBoard({
   isLoading 
 }: OverviewProps) {
   if (isLoading) {
-    return <div className="animate-pulse flex flex-col gap-6">
-      <div className="h-48 bg-muted rounded-[2.5rem]" />
-      <div className="h-8 w-32 bg-muted rounded mx-2" />
-      <div className="flex gap-4 overflow-hidden">
-        {[1, 2, 3].map(i => <div key={i} className="min-w-[200px] h-40 bg-muted rounded-[2rem]" />)}
+    return (
+      <div className="animate-pulse flex flex-col gap-6">
+        <div className="h-40 bg-muted rounded-3xl" />
+        <div className="h-24 bg-muted rounded-3xl" />
       </div>
-    </div>;
+    );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Total Balance */}
-      <div className="relative overflow-hidden p-8 rounded-[2.5rem] bg-gradient-to-br from-primary to-indigo-600 text-white shadow-2xl shadow-primary/30">
-        <div className="relative z-10">
-          <p className="text-primary-foreground/80 font-medium mb-1 tracking-wide">Total Balance</p>
-          <motion.h2 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-8"
-          >
-            {formatCurrency(totalBalance)}
-          </motion.h2>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 bg-white/15 p-3 rounded-2xl backdrop-blur-md">
-              <div className="p-2 rounded-xl bg-green-400/20">
-                <ArrowUpRight className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Income</p>
-                <p className="font-bold">{formatCompactNumber(totalIncome)}</p>
-              </div>
+      {/* Balance Card Section */}
+      <motion.div 
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="rounded-[24px] p-6 relative overflow-hidden shadow-lg shadow-accent/20"
+        style={{ background: "linear-gradient(135deg, #35c2c1 0%, #2aadac 100%)" }}
+      >
+        {/* Decorative circles */}
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white opacity-20" />
+        <div className="absolute -bottom-6 -right-2 w-20 h-20 rounded-full bg-white opacity-10" />
+        
+        <p className="text-white/90 text-[13px] font-semibold mb-1">Total Balance</p>
+        <h2 className="text-white text-3xl font-extrabold mb-6 tracking-tight">
+          {formatCurrency(totalBalance)}
+        </h2>
+        
+        <div className="flex items-center gap-6">
+          {/* Income */}
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 18 16" fill="none">
+                <path d="M9 0L18 16H0L9 0Z" fill="#13873D" />
+              </svg>
             </div>
-            
-            <div className="flex items-center gap-3 bg-white/15 p-3 rounded-2xl backdrop-blur-md">
-              <div className="p-2 rounded-xl bg-red-400/20">
-                <ArrowDownLeft className="w-5 h-5 text-red-400" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Expense</p>
-                <p className="font-bold">{formatCompactNumber(totalExpense)}</p>
-              </div>
+            <div className="flex flex-col">
+              <span className="text-white/80 text-[10px] font-bold uppercase leading-none mb-0.5">Income</span>
+              <span className="text-white text-[14px] font-bold leading-none">{formatCompactNumber(totalIncome)}</span>
+            </div>
+          </div>
+          
+          {/* Separator */}
+          <div className="w-px h-6 bg-white/20" />
+          
+          {/* Expenses */}
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 18 16" fill="none">
+                <path d="M9 16L0 0H18L9 16Z" fill="#B90B0B" />
+              </svg>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-white/80 text-[10px] font-bold uppercase leading-none mb-0.5">Expenses</span>
+              <span className="text-white text-[14px] font-bold leading-none">{formatCompactNumber(totalExpense)}</span>
             </div>
           </div>
         </div>
-        
-        {/* Animated Background Decor */}
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 10, 0] }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" 
-        />
-        <div className="absolute top-1/2 -left-20 w-48 h-48 bg-indigo-400/20 rounded-full blur-2xl" />
-      </div>
+      </motion.div>
 
-      {/* Wallet Section Header */}
-      <div className="flex items-center justify-between px-2 mt-2">
-        <h3 className="text-xl font-bold tracking-tight">Your Wallets</h3>
-        <button className="text-primary font-semibold text-sm hover:underline">See All</button>
-      </div>
+      {/* Wallets Section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-[16px] font-extrabold text-[#1e232c]">My Wallets</h3>
+          <button className="text-[13px] font-bold text-accent">Manage</button>
+        </div>
 
-      {/* Horizontal Wallet Carousel */}
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
-        {wallets.map((wallet) => (
-          <WalletItem 
-            key={wallet.id} 
-            name={wallet.walletName} 
-            balance={formatCurrency(wallet.balance)} 
-            type={wallet.walletType} 
-            color={getWalletColor(wallet.walletType)} 
-          />
-        ))}
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
+          {wallets.map((wallet) => (
+            <motion.div 
+              key={wallet.id}
+              whileTap={{ scale: 0.96 }}
+              className="snap-start min-w-[140px] p-4 rounded-[20px] bg-white border border-[#e8ecf4] flex flex-col gap-3 shadow-sm"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#f7f8f9] flex items-center justify-center text-[#1e232c] border border-[#e8ecf4]/50">
+                <Wallet className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-[#8391a1] truncate mb-0.5 uppercase tracking-wider">{wallet.walletName}</p>
+                <p className="text-[15px] font-extrabold tracking-tight text-[#1e232c]">{formatCurrency(wallet.balance)}</p>
+              </div>
+            </motion.div>
+          ))}
+          {wallets.length === 0 && (
+            <div className="w-full py-6 text-center text-[#8391a1] bg-[#f7f8f9] rounded-2xl border border-dashed border-[#e8ecf4]">
+              <p className="text-[12px] font-semibold italic">No wallets added</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-
-function getWalletColor(type: string) {
-  switch (type.toLowerCase()) {
-    case 'bank': return 'bg-blue-500';
-    case 'cash': return 'bg-amber-500';
-    case 'e-wallet': return 'bg-emerald-500';
-    default: return 'bg-primary';
-  }
-}
-
-function WalletItem({ name, balance, type, color }: { name: string, balance: string, type: string, color: string }) {
-  return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="snap-start min-w-[200px] sm:min-w-[240px] p-6 rounded-[2rem] bg-card border border-border shadow-sm flex flex-col gap-4 group transition-all"
-    >
-      <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center text-white shadow-lg`}>
-        <Wallet className="w-6 h-6" />
-      </div>
-      <div>
-        <p className="text-sm text-muted-foreground font-medium capitalize">{type}</p>
-        <h4 className="font-bold text-lg leading-tight mb-1">{name}</h4>
-      </div>
-      <p className="text-xl font-extrabold tracking-tight mt-2">{balance}</p>
-    </motion.div>
   );
 }

@@ -7,10 +7,6 @@ import {
   LayoutDashboard, 
   History, 
   Settings, 
-  Plus, 
-  Wallet,
-  TrendingUp,
-  PieChart,
   LogOut
 } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
@@ -18,7 +14,7 @@ import { motion } from "framer-motion";
 import { useAuthVault } from "@core/hooks/AuthVault";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Overview", href: "/" },
+  { icon: LayoutDashboard, label: "Home", href: "/" },
   { icon: History, label: "History", href: "/history" },
   { icon: Settings, label: "Manage", href: "/manage" },
 ];
@@ -28,86 +24,41 @@ export function NavSider() {
   const { actions } = useAuthVault();
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden sm:flex flex-col fixed left-0 top-0 bottom-0 w-20 lg:w-64 bg-card border-r border-border/50 z-50 transition-all duration-300">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-          <span className="hidden lg:block font-black text-xl tracking-tighter text-foreground">MONEYTRACK</span>
-        </div>
-
-        <nav className="flex-1 px-3 py-6 flex flex-col gap-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link 
-                key={item.href} 
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group",
-                  isActive 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <item.icon className={cn("w-6 h-6 transition-transform group-hover:scale-110", isActive ? "stroke-[2.5px]" : "stroke-2")} />
-                <span className={cn("hidden lg:block font-bold tracking-tight", isActive ? "opacity-100" : "opacity-80")}>
-                  {item.label}
-                </span>
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeNav"
-                    className="absolute left-0 w-1 h-8 bg-primary rounded-r-full lg:hidden"
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-6 border-t border-border/50">
-           <div 
-             onClick={actions.clearSession}
-             className="flex items-center gap-3 p-2 rounded-2xl hover:bg-red-50 text-foreground hover:text-red-600 transition-colors cursor-pointer group"
-           >
-              <div className="w-10 h-10 rounded-full bg-indigo-100 group-hover:bg-red-100 flex items-center justify-center text-indigo-600 group-hover:text-red-600 font-bold">JD</div>
-              <div className="hidden lg:block">
-                <p className="text-sm font-bold leading-none mb-1">Logout</p>
-                <p className="text-[10px] font-medium opacity-70">Premium Plan</p>
-              </div>
-           </div>
-        </div>
-      </aside>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4 flex items-center justify-between z-50">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
+    <nav className="glass border-t border-border/50 px-6 py-2 flex items-center justify-between safe-bottom w-full">
+      {navItems.map((item) => {
+        const isActive = pathname === item.href;
+        return (
+          <motion.div key={item.href} whileTap={{ scale: 0.9 }}>
             <Link 
-              key={item.href} 
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-1 transition-all",
-                isActive ? "text-primary scale-110" : "text-muted-foreground"
+                "flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all duration-300 relative",
+                isActive ? "text-accent" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className={cn("w-6 h-6", isActive ? "stroke-[2.5px]" : "stroke-2")} />
-              <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
+              <item.icon className={cn("w-6 h-6 mb-1", isActive ? "stroke-[2.5px]" : "stroke-2")} />
+              <span className={cn("text-[10px] font-bold", isActive ? "opacity-100" : "opacity-70")}>{item.label}</span>
+              
+              {isActive && (
+                <motion.div 
+                  layoutId="navIndicator"
+                  className="absolute bottom-0 w-10 h-1 bg-accent rounded-t-full"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
             </Link>
-          );
-        })}
-        {/* Mobile Logout */}
-        <button 
-          onClick={actions.clearSession}
-          className="flex flex-col items-center gap-1 text-muted-foreground"
-        >
-          <LogOut className="w-6 h-6 stroke-2" />
-          <span className="text-[10px] font-bold tracking-tight">Exit</span>
-        </button>
-      </nav>
-    </>
+          </motion.div>
+        );
+      })}
+      
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={actions.clearSession}
+        className="flex flex-col items-center justify-center py-2 px-4 text-muted-foreground hover:text-destructive transition-colors"
+      >
+        <LogOut className="w-6 h-6 mb-1 stroke-2" />
+        <span className="text-[10px] font-bold opacity-70">Logout</span>
+      </motion.button>
+    </nav>
   );
 }

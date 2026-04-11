@@ -25,7 +25,18 @@ export async function POST(request: NextRequest) {
       name,
     }).returning();
 
-    return NextResponse.json({ userId: newUser.id }, { status: 201 });
+    const response = NextResponse.json({ userId: newUser.id }, { status: 201 });
+
+    // Konfigurasi cookie profesional untuk cross-device HTTP dan Production
+    response.cookies.set("moneytrack_session", newUser.id, {
+      httpOnly: false,
+      path: "/",
+      secure: request.headers.get("x-forwarded-proto") === "https" || request.nextUrl.protocol === "https:",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error) {
     console.error("Register error:", error);
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });

@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Filter, Coffee, ArrowUpRight, Bus, ShoppingBag, LucideIcon } from "lucide-react";
+import { Coffee, ArrowUpRight, Bus, ShoppingBag, LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Transaction } from "@core/types/DataCore";
 import { formatCurrency } from "@core/utils/HelperTool";
+import { cn } from "@core/utils/HelperTool";
 
 interface RecentActivitiesProps {
   transactions: Transaction[];
@@ -15,83 +16,87 @@ export function ActivityStream({ transactions, isLoading }: RecentActivitiesProp
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="h-8 w-40 bg-muted rounded mx-2 animate-pulse" />
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="h-24 bg-muted rounded-[2rem] animate-pulse" />
+        {[1, 2, 3].map(i => (
+          <div key={i} className="bg-white rounded-[20px] p-4 flex items-center gap-4 animate-pulse">
+            <div className="h-10 w-10 bg-muted rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-1/2 bg-muted rounded" />
+              <div className="h-2 w-1/4 bg-muted rounded" />
+            </div>
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between px-2">
-        <h3 className="text-xl font-bold tracking-tight">Recent Activity</h3>
-        <button className="flex items-center gap-1 text-muted-foreground font-medium text-sm hover:text-foreground transition-colors group">
-          Filter <Filter className="w-4 h-4 transition-transform group-hover:rotate-180" />
-        </button>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-[16px] font-extrabold text-[#1e232c]">Recent Transactions</h3>
+        <button className="text-[13px] font-bold text-[#8391a1]">See All</button>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 pb-24">
         {transactions.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground bg-card rounded-[2rem] border border-dashed">
-            No recent activities found.
+          <div className="bg-white rounded-[24px] py-12 text-center text-[#8391a1] border border-[#e8ecf4]">
+            <p className="text-sm font-semibold">No transactions yet</p>
           </div>
         ) : (
           transactions.map((transaction, idx) => (
             <motion.div
               key={transaction.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              whileHover={{ x: 5 }}
-              className="flex items-center gap-4 p-5 rounded-[2rem] bg-card border border-border/50 hover:border-primary/20 hover:shadow-md transition-all group"
+              className="flex items-center justify-between bg-white rounded-[24px] p-4 border border-[#e8ecf4] shadow-sm active:scale-[0.98] transition-transform"
             >
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${getTransactionColor(transaction)} group-hover:scale-110 transition-transform`}>
-                <TransactionIcon iconName={transaction.categoryIcon} classification={transaction.classification} />
+              <div className="flex items-center gap-4">
+                <div className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0 transition-colors",
+                  transaction.classification === 'income' 
+                    ? "bg-[#d1fae5] text-[#059669]" 
+                    : "bg-[#e0e7ff] text-[#4f46e5]"
+                )}>
+                  <TransactionIcon iconName={transaction.categoryIcon} classification={transaction.classification} />
+                </div>
+                
+                <div className="flex flex-col">
+                  <p className="text-[14px] font-extrabold text-[#1e232c] tracking-tight leading-none mb-1">
+                    {transaction.memo || transaction.categoryName}
+                  </p>
+                  <p className="text-[12px] text-[#8391a1] font-bold leading-none">
+                    {new Date(transaction.transactedAt).toLocaleDateString(undefined, { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
               </div>
               
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-base tracking-tight mb-0.5">{transaction.memo || transaction.categoryName}</h4>
-                <p className="text-xs text-muted-foreground font-medium">
-                  {transaction.categoryName} • {new Date(transaction.transactedAt).toLocaleDateString()}
-                </p>
-              </div>
-              
-              <div className="text-right flex flex-col items-end gap-1">
-                <p className={`font-extrabold text-lg tracking-tight ${transaction.classification === 'income' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                  {transaction.classification === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
-                </p>
-                <div className={`w-1.5 h-1.5 rounded-full ${transaction.classification === 'income' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-              </div>
+              <p className={cn(
+                "font-extrabold text-[15px] tracking-tight",
+                transaction.classification === 'income' ? 'text-[#10b981]' : 'text-[#ef4444]'
+              )}>
+                {formatCurrency(transaction.amount)}
+              </p>
             </motion.div>
           ))
         )}
       </div>
-      
-      <button className="w-full mt-2 py-4 rounded-[2rem] border border-dashed border-border text-muted-foreground font-bold hover:bg-muted/50 hover:text-foreground transition-all">
-        View All Transactions
-      </button>
     </div>
   );
-}
-
-function getTransactionColor(t: Transaction) {
-  if (t.categoryColor) {
-    return `bg-opacity-10 ${t.categoryColor}`; 
-  }
-  return t.classification === 'income' ? 'text-emerald-500 bg-emerald-50' : 'text-blue-500 bg-blue-50';
 }
 
 function TransactionIcon({ iconName, classification }: { iconName: string | null, classification: string | null }) {
   const icons: Record<string, LucideIcon> = {
     coffee: Coffee,
-    utensils: ArrowUpRight,
     bus: Bus,
     shopping: ShoppingBag,
     salary: ArrowUpRight,
   };
 
   const Icon = (iconName && icons[iconName.toLowerCase()]) || (classification === 'income' ? ArrowUpRight : ShoppingBag);
-  return <Icon className="w-6 h-6" />;
+  return <Icon className="w-5 h-5 stroke-[2.5px]" />;
 }

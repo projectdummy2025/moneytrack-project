@@ -1,26 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1e232c;
+  --card: #ffffff;
+  --card-foreground: #1e232c;
+  --popover: #ffffff;
+  --popover-foreground: #1e232c;
+  --primary: #1e232c;
+  --primary-foreground: #ffffff;
+  --secondary: #f7f8f9;
+  --secondary-foreground: #1e232c;
+  --muted: #f7f8f9;
+  --muted-foreground: #8391a1;
+  --accent: #35c2c1;
+  --accent-foreground: #ffffff;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: #e8ecf4;
+  --input: #f7f8f9;
+  --ring: #35c2c1;
+  --radius: 0.5rem;
+  
+  /* Template design tokens */
+  --template-accent-teal: #35c2c1;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #fafafa;
+  --card: #09090b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #35c2c1;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #35c2c1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Urbanist', sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    /* Mencegah overscroll bounce yang mengganggu di mobile */
+    overscroll-behavior-y: none;
+  }
+
+  button, a {
+    /* Menghilangkan delay 300ms di mobile */
+    touch-action: manipulation;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  input::placeholder {
+    color: #8391a1;
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 500;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* App-Like Glassmorphism */
+.glass {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background-color: color-mix(in srgb, var(--background), transparent 20%);
+}
+
+/* Hide scrollbars */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 24px);
 }

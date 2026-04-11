@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Category } from "@core/types/DataCore";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/categories");
@@ -22,11 +23,32 @@ export function useCategories() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
-  return { categories, isLoading, error, mutate: fetchCategories };
+  const createCategory = async (categoryName: string, classification: "income" | "expense", icon?: string, color?: string) => {
+    setIsCreating(true);
+    try {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        body: JSON.stringify({ categoryName, classification, icon, color }),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create category");
+      }
+
+      await fetchCategories();
+      return await response.json();
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return { categories, isLoading, error, mutate: fetchCategories, createCategory, isCreating };
 }

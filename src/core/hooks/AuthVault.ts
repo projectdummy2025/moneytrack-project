@@ -1,15 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import Cookies from "js-cookie";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+
+export function useProfile() {
+  const [user, setUser] = useState<{ name: string; email: string; image: string | null } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
+
+  return { user, isLoading };
+}
 
 export function useAuthVault() {
   const router = useRouter();
 
   const setSession = (userId: string) => {
-    // Simpan userId di cookie untuk dibaca server
-    Cookies.set("moneytrack_session", userId, { expires: 7 }); 
+    Cookies.set("moneytrack_session", userId, { expires: 7 });
     router.push("/");
   };
 
@@ -46,7 +69,6 @@ export function useAuthLogic() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      // Success! Set session
       actions.setSession(data.userId);
     } catch (err: any) {
       alert(err.message);

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Plus } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@core/utils/HelperTool";
 import { MasterRegistry } from "./MasterRegistry";
@@ -13,22 +13,31 @@ interface StatusHubProps {
     categoryItems: any[];
     isLoading: boolean;
     itemCount: number;
+    isAddWalletOpen: boolean;
+    isAddCategoryOpen: boolean;
+    isCreatingWallet: boolean;
+    isCreatingCategory: boolean;
   };
   actions: {
     setActiveTab: (tab: "wallets" | "categories") => void;
+    setIsAddWalletOpen: (open: boolean) => void;
+    setIsAddCategoryOpen: (open: boolean) => void;
+    handleAddClick: () => void;
+    createWallet: (name: string, type: string, currencyCode?: string) => Promise<void>;
+    createCategory: (name: string, classification: "income" | "expense", icon?: string, color?: string) => Promise<void>;
   };
 }
 
 export function StatusHub({ state, actions }: StatusHubProps) {
   return (
-    <div className="flex flex-col gap-8">
-      {/* 1. Tab Switcher */}
-      <div className="flex p-1.5 bg-muted rounded-[2.5rem] self-center sm:self-start min-w-[300px] border border-border/50">
+    <div className="flex flex-col gap-8 font-['Urbanist',sans-serif]">
+      {/* Tab Switcher */}
+      <div className="flex p-1 bg-secondary rounded-2xl border border-border/50 self-center w-full max-w-[320px]">
         <button
           onClick={() => actions.setActiveTab("wallets")}
           className={cn(
-            "flex-1 py-3 px-6 rounded-[2rem] text-sm font-bold transition-all duration-300",
-            state.activeTab === 'wallets' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            state.activeTab === 'wallets' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           Wallets
@@ -36,35 +45,40 @@ export function StatusHub({ state, actions }: StatusHubProps) {
         <button
           onClick={() => actions.setActiveTab("categories")}
           className={cn(
-            "flex-1 py-3 px-6 rounded-[2rem] text-sm font-bold transition-all duration-300",
-            state.activeTab === 'categories' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            state.activeTab === 'categories' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           Categories
         </button>
       </div>
 
-      {/* 2. List Section */}
-      <div className="flex flex-col gap-6 pb-20">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-2xl font-black tracking-tight capitalize">
-            {state.activeTab} 
-            <span className="ml-2 text-sm font-medium text-muted-foreground">
-              ({state.itemCount})
+      {/* List Section */}
+      <div className="flex flex-col gap-6 pb-24">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-foreground capitalize">
+              {state.activeTab}
+            </h3>
+            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-bold">
+              {state.itemCount}
             </span>
-          </h3>
-          <button className="p-3 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 active:scale-95 transition-all">
-            <Plus className="w-6 h-6 stroke-[3px]" />
+          </div>
+          <button
+            onClick={actions.handleAddClick}
+            className="w-10 h-10 rounded-xl bg-accent text-white shadow-md shadow-accent/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+          >
+            <Plus className="w-5 h-5 stroke-[3px]" />
           </button>
         </div>
 
         <AnimatePresence mode="wait">
           <motion.div
             key={state.activeTab}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: state.activeTab === 'wallets' ? -10 : 10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, x: state.activeTab === 'wallets' ? 10 : -10 }}
+            transition={{ duration: 0.2 }}
           >
             {state.activeTab === "wallets" ? (
               <MasterRegistry items={state.walletItems} isLoading={state.isLoading} />
@@ -74,6 +88,280 @@ export function StatusHub({ state, actions }: StatusHubProps) {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Add Wallet Dialog */}
+      <AddWalletDialog
+        isOpen={state.isAddWalletOpen}
+        onClose={() => actions.setIsAddWalletOpen(false)}
+        onCreate={actions.createWallet}
+        isCreating={state.isCreatingWallet}
+      />
+
+      {/* Add Category Dialog */}
+      <AddCategoryDialog
+        isOpen={state.isAddCategoryOpen}
+        onClose={() => actions.setIsAddCategoryOpen(false)}
+        onCreate={actions.createCategory}
+        isCreating={state.isCreatingCategory}
+      />
     </div>
+  );
+}
+
+function AddWalletDialog({
+  isOpen,
+  onClose,
+  onCreate,
+  isCreating,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (name: string, type: string, currencyCode?: string) => Promise<void>;
+  isCreating: boolean;
+}) {
+  const [walletName, setWalletName] = useState("");
+  const [walletType, setWalletType] = useState<"bank" | "cash" | "e-wallet">("bank");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!walletName.trim()) {
+      setError("Wallet name is required");
+      return;
+    }
+
+    try {
+      await onCreate(walletName.trim(), walletType, "IDR");
+      setWalletName("");
+      setWalletType("bank");
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Failed to create wallet");
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 z-50"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-foreground">Add New Wallet</h2>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {error && (
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                  Wallet Name
+                </label>
+                <input
+                  type="text"
+                  value={walletName}
+                  onChange={(e) => setWalletName(e.target.value)}
+                  placeholder="e.g., Bank BCA, Cash, GoPay"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                  Wallet Type
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["bank", "cash", "e-wallet"] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setWalletType(type)}
+                      disabled={isCreating}
+                      className={cn(
+                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        walletType === type
+                          ? "bg-accent text-white border-accent shadow-sm"
+                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                      )}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+              >
+                {isCreating ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    <span>Creating...</span>
+                  </div>
+                ) : (
+                  "Create Wallet"
+                )}
+              </button>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function AddCategoryDialog({
+  isOpen,
+  onClose,
+  onCreate,
+  isCreating,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (name: string, classification: "income" | "expense", icon?: string, color?: string) => Promise<void>;
+  isCreating: boolean;
+}) {
+  const [categoryName, setCategoryName] = useState("");
+  const [classification, setClassification] = useState<"income" | "expense">("expense");
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!categoryName.trim()) {
+      setError("Category name is required");
+      return;
+    }
+
+    try {
+      await onCreate(categoryName.trim(), classification);
+      setCategoryName("");
+      setClassification("expense");
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Failed to create category");
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 z-50"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-foreground">Add New Category</h2>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {error && (
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                  Category Name
+                </label>
+                <input
+                  type="text"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  placeholder="e.g., Food, Salary, Transport"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  disabled={isCreating}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                  Classification
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["expense", "income"] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setClassification(type)}
+                      disabled={isCreating}
+                      className={cn(
+                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        classification === type
+                          ? type === "income"
+                            ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                            : "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                      )}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+              >
+                {isCreating ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={18} />
+                    <span>Creating...</span>
+                  </div>
+                ) : (
+                  "Create Category"
+                )}
+              </button>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

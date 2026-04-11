@@ -23,27 +23,29 @@ export function MasterRegistry({
 }) {
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 font-['Urbanist',sans-serif]">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-24 bg-muted rounded-[2.5rem] animate-pulse" />
+          <div key={i} className="h-20 bg-muted rounded-3xl animate-pulse" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 font-['Urbanist',sans-serif]">
       {items.length === 0 ? (
-        <div className="p-12 text-center text-muted-foreground bg-card rounded-[2.5rem] border border-dashed border-border/50 font-bold">
-          No items found.
+        <div className="py-16 text-center text-muted-foreground bg-secondary/50 rounded-3xl border border-dashed border-border">
+          <p className="text-sm font-medium italic opacity-50">No items added yet</p>
         </div>
       ) : (
-        items.map((item, idx) => (
-          <ManagementItem 
-            key={idx}
-            {...item}
-          />
-        ))
+        <div className="bg-card rounded-3xl border border-border divide-y divide-border/50 shadow-sm shadow-black/5 overflow-hidden">
+          {items.map((item, idx) => (
+            <ManagementItem 
+              key={idx}
+              {...item}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -59,42 +61,42 @@ function ManagementItem({
 }: ManagementItemProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ delay }}
-      whileHover={{ y: -2, scale: 1.01 }}
-      className="flex items-center gap-4 p-5 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/20 hover:shadow-xl transition-all group cursor-pointer"
+      whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+      className="flex items-center gap-4 p-4 cursor-pointer transition-colors"
     >
       <div className={cn(
-        "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", 
-        colorClass || "text-primary bg-primary/10"
+        "w-11 h-11 rounded-2xl flex items-center justify-center transition-all border border-border/50", 
+        colorClass || "text-primary bg-secondary"
       )}>
-        <Icon className="w-6 h-6" />
+        <Icon className="w-5 h-5 stroke-[2px]" />
       </div>
       
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-lg tracking-tight mb-0.5 group-hover:text-primary transition-colors">{title}</h4>
-        <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{subtitle}</p>
+        <h4 className="font-bold text-[14px] tracking-tight text-foreground truncate">{title}</h4>
+        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{subtitle}</p>
       </div>
       
       {value !== undefined && (
-        <div className="text-right mr-4">
-          <p className="font-black text-lg tracking-tight text-slate-900">
+        <div className="text-right">
+          <p className="font-bold text-[14px] tracking-tight text-foreground">
             {typeof value === 'number' ? formatCurrency(value) : value}
           </p>
         </div>
       )}
       
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all">
-          <Edit3 className="w-5 h-5" />
+      <div className="flex items-center gap-1 opacity-0 pointer-events-none sm:group-hover:opacity-100 transition-all">
+        <button className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-primary flex items-center justify-center transition-all">
+          <Edit3 className="w-3.5 h-3.4" />
         </button>
-        <button className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-all">
-          <Trash2 className="w-5 h-5" />
+        <button className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-rose-500 flex items-center justify-center transition-all">
+          <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
       
-      <ChevronRight className="w-5 h-5 text-muted-foreground/30 group-hover:text-primary transition-colors sm:hidden" />
+      <ChevronRight className="w-4 h-4 text-muted-foreground/30 ml-1" />
     </motion.div>
   );
 }
