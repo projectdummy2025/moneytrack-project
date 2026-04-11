@@ -58,9 +58,9 @@ export function MonthlyOverview({ data, isLoading }: MonthlyOverviewProps) {
                     <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                   ))}
                 </Pie>
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ 
+                <Tooltip
+                  formatter={(value) => formatCurrency(Number(value))}
+                  contentStyle={{
                     borderRadius: '12px', 
                     border: '1px solid #e8ecf4',
                     fontFamily: 'Urbanist, sans-serif',
