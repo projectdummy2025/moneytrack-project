@@ -60,9 +60,9 @@ export function ExpenseTrends({ data, isLoading }: ExpenseTrendsProps) {
               tickFormatter={(value) => formatCompactNumber(value)}
               width={35}
             />
-            <Tooltip 
-              formatter={(value: number) => [formatCompactNumber(value), "Amount"]}
-              contentStyle={{ 
+            <Tooltip
+              formatter={(value) => [formatCompactNumber(Number(value)), "Amount"]}
+              contentStyle={{
                 borderRadius: '12px', 
                 border: '1px solid #e8ecf4',
                 fontFamily: 'Urbanist, sans-serif',
