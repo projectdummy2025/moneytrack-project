@@ -7,8 +7,10 @@ import { Wallet as WalletIcon, Tag as TagIcon } from "lucide-react";
 
 export function useManageCore() {
   const [activeTab, setActiveTab] = useState<"wallets" | "categories">("wallets");
-  const { wallets, isLoading: isLoadingWallets } = useWallets();
-  const { categories, isLoading: isLoadingCategories } = useCategories();
+  const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const { wallets, isLoading: isLoadingWallets, createWallet, isCreating: isCreatingWallet } = useWallets();
+  const { categories, isLoading: isLoadingCategories, createCategory, isCreating: isCreatingCategory } = useCategories();
 
   const walletItems = useMemo(() => {
     return wallets.map((w, idx) => ({
@@ -31,16 +33,33 @@ export function useManageCore() {
     }));
   }, [categories]);
 
+  const handleAddClick = () => {
+    if (activeTab === "wallets") {
+      setIsAddWalletOpen(true);
+    } else {
+      setIsAddCategoryOpen(true);
+    }
+  };
+
   return {
     state: {
       activeTab,
       walletItems,
       categoryItems,
       isLoading: isLoadingWallets || isLoadingCategories,
-      itemCount: activeTab === 'wallets' ? wallets.length : categories.length
+      itemCount: activeTab === 'wallets' ? wallets.length : categories.length,
+      isAddWalletOpen,
+      isAddCategoryOpen,
+      isCreatingWallet,
+      isCreatingCategory,
     },
     actions: {
-      setActiveTab
+      setActiveTab,
+      setIsAddWalletOpen,
+      setIsAddCategoryOpen,
+      handleAddClick,
+      createWallet,
+      createCategory,
     }
   };
 }
