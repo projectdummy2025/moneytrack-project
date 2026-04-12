@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Coffee, ArrowUpRight, Bus, ShoppingBag, LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Transaction } from "@core/types/DataCore";
@@ -33,7 +34,7 @@ export function ActivityStream({ transactions, isLoading }: RecentActivitiesProp
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-[16px] font-extrabold text-[#1e232c]">Recent Transactions</h3>
-        <button className="text-[13px] font-bold text-[#8391a1]">See All</button>
+        <Link href="/history" className="text-[13px] font-bold text-[#8391a1] hover:text-accent transition-colors">See All</Link>
       </div>
 
       <div className="flex flex-col gap-3 pb-24">

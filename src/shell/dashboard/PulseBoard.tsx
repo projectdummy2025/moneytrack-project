@@ -3,6 +3,7 @@
 import React from "react";
 import { Wallet } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Wallet as WalletType } from "@core/types/DataCore";
 import { formatCurrency, formatCompactNumber } from "@core/utils/HelperTool";
 
@@ -84,7 +85,7 @@ export function PulseBoard({
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-[16px] font-extrabold text-[#1e232c]">My Wallets</h3>
-          <button className="text-[13px] font-bold text-accent">Manage</button>
+          <Link href="/manage" className="text-[13px] font-bold text-accent hover:opacity-80 transition-opacity">Manage</Link>
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">

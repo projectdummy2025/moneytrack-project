@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatCurrency } from "@core/utils/HelperTool";
 
@@ -31,7 +32,7 @@ export function MonthlyOverview({ data, isLoading }: MonthlyOverviewProps) {
     <div className="bg-white rounded-[24px] p-6 border border-[#e8ecf4] shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-[16px] font-extrabold text-[#1e232c]">Monthly Expenses</h3>
-        <button className="text-[13px] font-bold text-[#8391a1]">See All</button>
+        <Link href="/history/stats" className="text-[13px] font-bold text-[#8391a1] hover:text-accent transition-colors">See All</Link>
       </div>
 
       {!hasData ? (
