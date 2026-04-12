@@ -8,9 +8,9 @@ export default function HistoryPage() {
   const brain = useHistoryCore();
 
   return (
-    <TraceLine 
-      state={brain.state} 
-      actions={brain.actions} 
+    <TraceLine
+      state={brain.state}
+      actions={brain.actions}
     />
   );
 }

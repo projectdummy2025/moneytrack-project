@@ -8,6 +8,8 @@ export function useWallets() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchWallets = useCallback(async () => {
     setIsLoading(true);
@@ -50,5 +52,55 @@ export function useWallets() {
     }
   };
 
-  return { wallets, isLoading, error, mutate: fetchWallets, createWallet, isCreating };
+  const updateWallet = async (id: string, data: { walletName?: string; walletType?: string; balance?: string; currencyCode?: string }) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/wallets/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to update wallet");
+      }
+
+      await fetchWallets();
+      return await response.json();
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const deleteWallet = async (id: string) => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/wallets/${id}`, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Failed to delete wallet");
+      }
+
+      await fetchWallets();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return {
+    wallets,
+    isLoading,
+    error,
+    mutate: fetchWallets,
+    createWallet,
+    isCreating,
+    updateWallet,
+    isUpdating,
+    deleteWallet,
+    isDeleting,
+  };
 }

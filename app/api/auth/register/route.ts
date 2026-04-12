@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
-import { users } from "@/db/schema";
+import { users, categories, wallets } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+const DEFAULT_CATEGORIES = [
+  // Expense categories
+  { categoryName: "Makanan", classification: "expense" as const, icon: "utensils", color: "#ef4444" },
+  { categoryName: "Transportasi", classification: "expense" as const, icon: "car", color: "#3b82f6" },
+  { categoryName: "Belanja", classification: "expense" as const, icon: "shopping-bag", color: "#8b5cf6" },
+  { categoryName: "Tagihan", classification: "expense" as const, icon: "receipt", color: "#f59e0b" },
+  { categoryName: "Hiburan", classification: "expense" as const, icon: "gamepad-2", color: "#ec4899" },
+  { categoryName: "Kesehatan", classification: "expense" as const, icon: "heart-pulse", color: "#10b981" },
+  // Income categories
+  { categoryName: "Gaji", classification: "income" as const, icon: "banknote", color: "#22c55e" },
+  { categoryName: "Bonus", classification: "income" as const, icon: "gift", color: "#06b6d4" },
+  { categoryName: "Investasi", classification: "income" as const, icon: "trending-up", color: "#84cc16" },
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,15 +31,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email already registered" }, { status: 400 });
     }
 
-    // Create user (Manual: password stored as plain for now or simple hash)
-    // IMPORTANT: Use bcrypt in production
+    // Create user
     const [newUser] = await db.insert(users).values({
       email,
-      password, // Plain text for trial mode as requested
+      password,
       name,
     }).returning();
 
-    const response = NextResponse.json({ userId: newUser.id }, { status: 201 });
+    // Create default wallet
+    const [defaultWallet] = await db.insert(wallets).values({
+      userId: newUser.id,
+      walletName: "Cash",
+      walletType: "cash",
+      balance: "0",
+      currencyCode: "IDR",
+    }).returning();
+
+    // Create default categories
+    await db.insert(categories).values(
+      DEFAULT_CATEGORIES.map(cat => ({
+        ...cat,
+        userId: newUser.id,
+      }))
+    );
+
+    const response = NextResponse.json({ userId: newUser.id, walletId: defaultWallet.id }, { status: 201 });
 
     // Konfigurasi cookie profesional untuk cross-device HTTP dan Production
     response.cookies.set("moneytrack_session", newUser.id, {

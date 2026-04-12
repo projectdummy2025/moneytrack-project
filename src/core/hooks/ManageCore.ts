@@ -9,11 +9,15 @@ export function useManageCore() {
   const [activeTab, setActiveTab] = useState<"wallets" | "categories">("wallets");
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const { wallets, isLoading: isLoadingWallets, createWallet, isCreating: isCreatingWallet } = useWallets();
-  const { categories, isLoading: isLoadingCategories, createCategory, isCreating: isCreatingCategory } = useCategories();
+  const [editingWallet, setEditingWallet] = useState<{ id: string; name: string; type: string } | null>(null);
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; classification: "income" | "expense"; icon?: string; color?: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "wallet" | "category"; id: string; name: string } | null>(null);
+  const { wallets, isLoading: isLoadingWallets, createWallet, isCreating: isCreatingWallet, updateWallet, deleteWallet } = useWallets();
+  const { categories, isLoading: isLoadingCategories, createCategory, isCreating: isCreatingCategory, updateCategory, deleteCategory } = useCategories();
 
   const walletItems = useMemo(() => {
     return wallets.map((w, idx) => ({
+      id: w.id,
       title: w.walletName,
       subtitle: w.walletType,
       value: w.balance,
@@ -25,9 +29,12 @@ export function useManageCore() {
 
   const categoryItems = useMemo(() => {
     return categories.map((c, idx) => ({
+      id: c.id,
       title: c.categoryName,
       subtitle: c.classification,
       icon: TagIcon,
+      color: c.color,
+      icon_name: c.icon,
       colorClass: c.classification === 'income' ? 'text-emerald-500 bg-emerald-50' : 'text-orange-500 bg-orange-50',
       delay: idx * 0.05
     }));
@@ -41,6 +48,36 @@ export function useManageCore() {
     }
   };
 
+  const handleEditWallet = (id: string, name: string, type: string) => {
+    setEditingWallet({ id, name, type });
+  };
+
+  const handleUpdateWallet = async (name: string, type: string) => {
+    if (!editingWallet) return;
+    await updateWallet(editingWallet.id, { walletName: name, walletType: type });
+    setEditingWallet(null);
+  };
+
+  const handleEditCategory = (id: string, name: string, classification: "income" | "expense", icon?: string, color?: string) => {
+    setEditingCategory({ id, name, classification, icon, color });
+  };
+
+  const handleUpdateCategory = async (name: string, classification: "income" | "expense", icon?: string, color?: string) => {
+    if (!editingCategory) return;
+    await updateCategory(editingCategory.id, { categoryName: name, classification, icon, color });
+    setEditingCategory(null);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    if (deleteConfirm.type === "wallet") {
+      await deleteWallet(deleteConfirm.id);
+    } else {
+      await deleteCategory(deleteConfirm.id);
+    }
+    setDeleteConfirm(null);
+  };
+
   return {
     state: {
       activeTab,
@@ -52,6 +89,9 @@ export function useManageCore() {
       isAddCategoryOpen,
       isCreatingWallet,
       isCreatingCategory,
+      editingWallet,
+      editingCategory,
+      deleteConfirm,
     },
     actions: {
       setActiveTab,
@@ -60,6 +100,14 @@ export function useManageCore() {
       handleAddClick,
       createWallet,
       createCategory,
+      handleEditWallet,
+      handleUpdateWallet,
+      setEditingWallet,
+      handleEditCategory,
+      handleUpdateCategory,
+      setEditingCategory,
+      setDeleteConfirm,
+      handleDelete,
     }
   };
 }

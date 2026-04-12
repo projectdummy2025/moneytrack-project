@@ -8,16 +8,17 @@ export function useDashBrain() {
   const { wallets, isLoading: isLoadingWallets, mutate: mutateWallets } = useWallets();
   const { transactions, isLoading: isLoadingTransactions, mutate: mutateTransactions } = useTransactions();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const stats = useMemo(() => {
     let totalBalance = 0;
     wallets.forEach(w => totalBalance += parseFloat(w.balance));
-    
+
     let totalIncome = 0;
     let totalExpense = 0;
     const categoryMap: Record<string, { name: string; value: number; color: string }> = {};
     const colors = ["#ef4444", "#3b82f6", "#ffb95a", "#84cc16", "#10b981", "#6366f1"];
-    
+
     // Grouping weekly data shell
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
@@ -35,14 +36,14 @@ export function useDashBrain() {
         totalIncome += amount;
       } else {
         totalExpense += amount;
-        
+
         // Stats for Pie
         const catId = t.categoryName || "other";
         if (!categoryMap[catId]) {
-          categoryMap[catId] = { 
-            name: t.categoryName || "Other", 
-            value: 0, 
-            color: colors[Object.keys(categoryMap).length % colors.length] 
+          categoryMap[catId] = {
+            name: t.categoryName || "Other",
+            value: 0,
+            color: colors[Object.keys(categoryMap).length % colors.length]
           };
         }
         categoryMap[catId].value += amount;
@@ -56,9 +57,9 @@ export function useDashBrain() {
 
     const categoryData = Object.values(categoryMap).sort((a, b) => b.value - a.value);
 
-    return { 
-      totalBalance, 
-      totalIncome, 
+    return {
+      totalBalance,
+      totalIncome,
       totalExpense,
       categoryData,
       weeklyData: last7Days
@@ -76,6 +77,7 @@ export function useDashBrain() {
       transactions: transactions.slice(0, 5),
       isLoading: isLoadingWallets || isLoadingTransactions,
       isDrawerOpen,
+      isTransferOpen,
       totals: {
         totalBalance: stats.totalBalance,
         totalIncome: stats.totalIncome,
@@ -86,6 +88,7 @@ export function useDashBrain() {
     },
     actions: {
       setIsDrawerOpen,
+      setIsTransferOpen,
       handleTransactionSuccess,
     }
   };
