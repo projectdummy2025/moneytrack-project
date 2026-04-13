@@ -17,21 +17,21 @@ interface ExpenseTrendsProps {
 export function ExpenseTrends({ data, isLoading }: ExpenseTrendsProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-[24px] p-6 border border-[#e8ecf4] animate-pulse">
-        <div className="h-6 w-32 bg-muted rounded-md mb-6" />
-        <div className="h-40 w-full bg-muted rounded-xl" />
+      <div className="bg-card rounded-[24px] p-6 border border-border animate-pulse shadow-sm">
+        <div className="h-6 w-32 bg-secondary rounded-md mb-6" />
+        <div className="h-40 w-full bg-secondary rounded-xl" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-[24px] p-6 border border-[#e8ecf4] shadow-sm">
+    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-[16px] font-extrabold text-[#1e232c]">Expense Chart</h3>
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#e8ecf4] bg-[#f7f8f9] text-[12px] font-bold text-[#8391a1]">
+        <h3 className="text-body-lg font-extrabold text-foreground">Expense Chart</h3>
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-secondary text-meta-2xs font-semibold text-muted-foreground uppercase">
           Weekly
           <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <path d="M1 1L5 5L9 1" stroke="#8391a1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       </div>
@@ -45,36 +45,39 @@ export function ExpenseTrends({ data, isLoading }: ExpenseTrendsProps) {
                 <stop offset="95%" stopColor="#35c2c1" stopOpacity={0.01} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e8ecf4" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} opacity={0.5} />
             <XAxis 
               dataKey="day" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: "#8391a1", fontSize: 10, fontWeight: 700 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontWeight: 800 }}
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: "#8391a1", fontSize: 10, fontWeight: 700 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontWeight: 800 }}
               tickFormatter={(value) => formatCompactNumber(value)}
               width={35}
             />
             <Tooltip
               formatter={(value) => [formatCompactNumber(Number(value)), "Amount"]}
               contentStyle={{
-                borderRadius: '12px', 
-                border: '1px solid #e8ecf4',
+                borderRadius: '16px', 
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--card)',
+                color: 'var(--foreground)',
                 fontFamily: 'Urbanist, sans-serif',
                 fontSize: '11px',
-                fontWeight: 'bold'
+                fontWeight: '800'
               }}
+              itemStyle={{ color: '#35c2c1' }}
             />
             <Area
               type="monotone"
               dataKey="amount"
               stroke="#35c2c1"
-              strokeWidth={3}
+              strokeWidth={4}
               fillOpacity={1}
               fill="url(#colorAmount)"
               dot={{ r: 4, fill: "#35c2c1", strokeWidth: 2, stroke: "#fff" }}
