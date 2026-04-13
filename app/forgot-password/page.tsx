@@ -16,10 +16,10 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto">
       {/* Title & Description */}
-      <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 mt-10">
+      <h1 className="text-heading-xl font-bold text-[#1e232c] leading-tight mb-3 mt-10">
         Forgot Password?
       </h1>
-      <p className="text-[16px] font-medium text-[#8391a1] leading-relaxed mb-8">
+      <p className="text-body-lg font-medium text-[#8391a1] leading-relaxed mb-8">
         Don&apos;t worry! It occurs. Please enter the email address linked with your account.
       </p>
 
@@ -37,14 +37,14 @@ export default function ForgotPasswordPage() {
       {/* Send Code Button */}
       <button
         onClick={handleSendCode}
-        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
+        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-body text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
       >
         Send Code
       </button>
 
       {/* Remember Password link */}
       <div className="mt-auto pb-6 text-center pt-10">
-        <p className="text-[15px] text-[#1e232c] font-medium">
+        <p className="text-body text-[#1e232c] font-medium">
           Remember Password?{" "}
           <Link
             href="/login"
