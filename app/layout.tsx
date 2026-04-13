@@ -26,6 +26,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { DashProvider } from "@core/providers/DashProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,7 +39,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary/20 selection:text-primary`}
         suppressHydrationWarning
       >
-        <MainLayout>{children}</MainLayout>
+        <DashProvider>
+          <MainLayout>{children}</MainLayout>
+        </DashProvider>
       </body>
     </html>
   );

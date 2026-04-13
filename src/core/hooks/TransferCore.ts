@@ -82,8 +82,9 @@ export function useTransferCore({ isOpen, onClose, onSuccess }: TransferCoreProp
       setAmount("");
       setMemo("");
       setError("");
-    } catch (err: any) {
-      setError(err.message || "Failed to create transfer");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Failed to create transfer");
     } finally {
       setIsSubmitting(false);
     }

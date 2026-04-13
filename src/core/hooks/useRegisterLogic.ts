@@ -35,7 +35,7 @@ export function useRegisterLogic() {
 
       Cookies.set("moneytrack_session", data.userId, { expires: 7, path: '/' });
       router.push("/");
-    } catch (err: any) {
+    } catch (err) {
       throw err;
     } finally {
       setIsLoading(false);

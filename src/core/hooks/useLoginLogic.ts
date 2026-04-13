@@ -35,7 +35,7 @@ export function useLoginLogic() {
       
       // Redirect paksa secara halus
       router.push("/");
-    } catch (err: any) {
+    } catch (err) {
       throw err; // Lempar ke UI agar localError muncul
     } finally {
       setIsLoading(false);

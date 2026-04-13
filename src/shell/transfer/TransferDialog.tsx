@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowLeftRight, Loader2 } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
 import { Wallet } from "@core/types/DataCore";
 
@@ -37,141 +37,131 @@ export function TransferDialog({ isOpen, onClose, state, actions }: TransferDial
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[60] bg-black/65 backdrop-blur-[2px]"
           />
 
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] bg-background rounded-t-[2rem] shadow-2xl flex flex-col max-h-[85vh] w-full max-w-[430px] overflow-hidden font-['Urbanist',sans-serif]"
+            transition={{ type: "spring", damping: 32, stiffness: 300 }}
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] bg-[#121418] rounded-t-[24px] flex flex-col h-[88vh] w-full max-w-[430px] overflow-hidden font-['Inter',sans-serif]"
           >
-            {/* Handle */}
-            <div className="w-full flex justify-center py-3">
-              <div className="w-12 h-1.5 rounded-full bg-muted" />
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-0 shrink-0">
+              <div className="bg-white/10 h-[4px] rounded-full w-[60px]" />
             </div>
 
-            {/* Header */}
-            <div className="px-6 py-2 flex items-center justify-between border-b border-border/50">
+            {/* Title row */}
+            <div className="flex items-center justify-between px-[15px] pt-[12px] pb-0 shrink-0">
+              <p className="text-heading-sm font-extrabold text-white">Transfer</p>
               <button
                 onClick={onClose}
-                className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="cursor-pointer flex items-center justify-center size-[38px] rounded-full bg-white/5 active:bg-white/10 transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 text-white" />
               </button>
-              <div className="flex items-center gap-2">
-                <ArrowLeftRight className="w-5 h-5 text-accent" />
-                <h3 className="text-lg font-bold text-foreground">Transfer</h3>
-              </div>
-              <div className="w-10" />
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 pb-8">
+            {/* Amount display */}
+            <div className="shrink-0 px-[15px] pb-[20px] pt-[25px] text-center">
+              <p className="text-meta font-medium text-white/50 mb-[5px]">Transfer Amount</p>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={state.amount}
+                onChange={(e) => actions.setAmount(e.target.value)}
+                className="bg-transparent text-center text-display-xl font-black text-white outline-none w-full"
+              />
+            </div>
+
+            <div className="bg-white/5 h-px w-full shrink-0" />
+
+            {/* Scrollable form fields */}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-[#121418]">
               {state.error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+                <div className="mx-[15px] mt-[15px] bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm font-medium">
                   {state.error}
                 </div>
               )}
 
-              {/* Source Wallet */}
-              <div className="flex flex-col gap-3">
-                <p className="text-[13px] font-bold text-foreground ml-1">From</p>
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+              {/* From Account Selection */}
+              <div className="flex flex-col gap-3 p-[15px]">
+                <p className="text-meta font-medium text-white/50">From Account</p>
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
                   {state.wallets.map((wallet) => (
                     <button
                       key={wallet.id}
                       onClick={() => actions.setSourceWalletId(wallet.id)}
                       className={cn(
-                        "px-4 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-bold",
+                        "px-[15px] py-[10px] rounded-[35px] border transition-all whitespace-nowrap text-meta font-medium flex flex-col items-start",
                         state.sourceWalletId === wallet.id
-                          ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
-                          : "bg-secondary border-transparent text-muted-foreground"
+                          ? "bg-[#6a66ff1a] border-[#6a66ff] text-white"
+                          : "bg-transparent border-white/10 text-white/70"
                       )}
                     >
-                      <div>{wallet.walletName}</div>
-                      <div className="text-[10px] opacity-70">IDR {wallet.balance}</div>
+                      <span>{wallet.walletName}</span>
+                      <span className="text-meta-2xs opacity-50">IDR {wallet.balance}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Arrow indicator */}
-              <div className="flex justify-center">
-                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                  <ArrowLeftRight className="w-5 h-5 text-accent" />
-                </div>
-              </div>
+              <div className="bg-white/5 h-px w-full" />
 
-              {/* Target Wallet */}
-              <div className="flex flex-col gap-3">
-                <p className="text-[13px] font-bold text-foreground ml-1">To</p>
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
+              {/* To Account Selection */}
+              <div className="flex flex-col gap-3 p-[15px]">
+                <p className="text-meta font-medium text-white/50">To Account</p>
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
                   {state.wallets.map((wallet) => (
                     <button
                       key={wallet.id}
-                      onClick={() => actions.setTargetWalletId(wallet.id)}
                       disabled={wallet.id === state.sourceWalletId}
+                      onClick={() => actions.setTargetWalletId(wallet.id)}
                       className={cn(
-                        "px-4 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-bold",
+                        "px-[15px] py-[10px] rounded-[35px] border transition-all whitespace-nowrap text-meta font-medium flex flex-col items-start",
                         state.targetWalletId === wallet.id
-                          ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                          ? "bg-[#00fc651a] border-[#00fc65] text-white"
                           : wallet.id === state.sourceWalletId
-                            ? "bg-secondary/50 border-transparent text-muted-foreground/30 cursor-not-allowed"
-                            : "bg-secondary border-transparent text-muted-foreground"
+                            ? "opacity-30 grayscale cursor-not-allowed border-white/5"
+                            : "bg-transparent border-white/10 text-white/70"
                       )}
                     >
-                      <div>{wallet.walletName}</div>
-                      <div className="text-[10px] opacity-70">IDR {wallet.balance}</div>
+                      <span>{wallet.walletName}</span>
+                      <span className="text-meta-2xs opacity-50">IDR {wallet.balance}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Amount Input */}
-              <div className="flex flex-col items-center gap-4 pt-4">
-                <div className="w-full relative flex items-baseline justify-center">
-                  <span className="text-2xl font-bold text-muted-foreground/40 mr-2">IDR</span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={state.amount}
-                    onChange={(e) => actions.setAmount(e.target.value)}
-                    className="bg-transparent text-center text-5xl font-extrabold tracking-tight outline-none placeholder:text-muted w-[200px]"
-                  />
-                </div>
-              </div>
+              <div className="bg-white/5 h-px w-full" />
 
-              {/* Memo */}
-              <div className="w-full bg-secondary rounded-2xl p-4">
-                <input
-                  type="text"
-                  placeholder="Add a note (optional)..."
+              {/* Notes */}
+              <div className="px-[15px] py-[15px]">
+                <p className="text-meta font-medium text-white/50 mb-[5px]">Notes</p>
+                <textarea
+                  placeholder="Add a note..."
                   value={state.memo}
                   onChange={(e) => actions.setMemo(e.target.value)}
-                  className="w-full bg-transparent text-[15px] font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
+                  className="w-full bg-transparent text-body-sm font-medium text-white/80 outline-none resize-none h-20"
                 />
               </div>
+            </div>
 
-              {/* Submit Button */}
+            {/* Transfer Button */}
+            <div className="shrink-0 px-[15px] pb-[30px] pt-[10px] bg-[#121418]">
               <button
                 onClick={actions.handleSubmit}
                 disabled={state.isSubmitting || !state.amount || !state.sourceWalletId || !state.targetWalletId}
                 className={cn(
-                  "w-full py-4 rounded-2xl bg-accent text-white text-[15px] font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
-                  (state.isSubmitting || !state.amount || !state.sourceWalletId || !state.targetWalletId) && "opacity-50 grayscale cursor-not-allowed"
+                  "w-full bg-[#6a66ff] h-[48px] rounded-[10px] flex items-center justify-center active:opacity-90 transition-all",
+                  (state.isSubmitting || !state.amount) && "opacity-50 grayscale cursor-not-allowed"
                 )}
               >
                 {state.isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} />
-                    Processing...
-                  </>
+                  <Loader2 className="animate-spin text-white" size={20} />
                 ) : (
-                  <>
-                    <ArrowLeftRight size={20} />
-                    Transfer Now
-                  </>
+                  <p className="text-body-sm font-bold text-white">Transfer Now</p>
                 )}
               </button>
             </div>

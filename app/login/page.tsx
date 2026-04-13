@@ -20,14 +20,15 @@ export default function LoginPage() {
     
     try {
       await actions.handleLogin();
-    } catch (err: any) {
-      setLocalError(err.message || "Login failed. Please check your network.");
+    } catch (err) {
+      const error = err as Error;
+      setLocalError(error.message || "Login failed. Please check your network.");
     }
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto">
-      <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-8 mt-10">
+      <h1 className="text-heading-xl text-[#1e232c] leading-tight mb-8 mt-10">
         Welcome back! Glad to see you, Again!
       </h1>
 
@@ -70,7 +71,7 @@ export default function LoginPage() {
         </div>
 
         <div className="flex justify-end pr-1">
-          <Link href="/forgot-password" title="Forgot Password" className="text-[14px] font-semibold text-[#6a707c] no-underline">
+          <Link href="/forgot-password" title="Forgot Password" className="text-body-sm font-semibold text-[#6a707c] no-underline">
             Forgot Password?
           </Link>
         </div>
@@ -79,7 +80,7 @@ export default function LoginPage() {
           type="button"
           onClick={handleManualLogin}
           disabled={state.isLoading}
-          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-[15px] flex items-center justify-center transition-all mt-4 active:scale-95 disabled:opacity-50 relative z-50 shadow-lg shadow-black/10 active:bg-[#2d3441]"
+          className="w-full h-[56px] rounded-xl bg-[#1e232c] text-white font-bold text-body flex items-center justify-center transition-all mt-4 active:scale-95 disabled:opacity-50 relative z-50 shadow-lg shadow-black/10 active:bg-[#2d3441]"
         >
           {state.isLoading ? (
             <div className="flex items-center gap-2">
@@ -93,7 +94,7 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-auto pb-6 text-center pt-10">
-        <p className="text-[15px] text-[#1e232c]">
+        <p className="text-body text-[#1e232c]">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="font-bold text-[#35c2c1] no-underline">
             Register Now

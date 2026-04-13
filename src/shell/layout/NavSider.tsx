@@ -4,61 +4,82 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  LayoutDashboard, 
-  History, 
-  Settings, 
-  LogOut
+  Home, 
+  FileText, 
+  Plus, 
+  Wallet,
+  User
 } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
 import { motion } from "framer-motion";
-import { useAuthVault } from "@core/hooks/AuthVault";
-
-const navItems = [
-  { icon: LayoutDashboard, label: "Home", href: "/" },
-  { icon: History, label: "History", href: "/history" },
-  { icon: Settings, label: "Manage", href: "/manage" },
-];
+import { useDashBrain } from "@core/hooks/DashBrain";
 
 export function NavSider() {
   const pathname = usePathname();
-  const { actions } = useAuthVault();
+  const brain = useDashBrain();
+
+  const navItems = [
+    { icon: Home, label: "Home", href: "/" },
+    { icon: FileText, label: "Records", href: "/history" },
+  ];
+
+  const rightItems = [
+    { icon: Wallet, label: "Wallets", href: "/wallets" },
+    { icon: User, label: "Profile", href: "/profile" },
+  ];
 
   return (
-    <nav className="glass border-t border-border/50 px-6 py-2 flex items-center justify-between safe-bottom w-full">
-      {navItems.map((item) => {
-        const isActive = pathname === item.href;
-        return (
-          <motion.div key={item.href} whileTap={{ scale: 0.9 }}>
+    <div className="shrink-0 w-full bg-background/95 backdrop-blur-[8px] border-t border-border relative h-[83px]">
+      <div className="absolute inset-0 flex items-center pb-[5px] px-[5px]">
+        {/* Left Side Items */}
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
             <Link 
+              key={item.href}
               href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all duration-300 relative",
-                isActive ? "text-accent" : "text-muted-foreground hover:text-foreground"
-              )}
+              className="flex flex-1 flex-col items-center justify-center h-full"
             >
-              <item.icon className={cn("w-6 h-6 mb-1", isActive ? "stroke-[2.5px]" : "stroke-2")} />
-              <span className={cn("text-[10px] font-bold", isActive ? "opacity-100" : "opacity-70")}>{item.label}</span>
-              
-              {isActive && (
-                <motion.div 
-                  layoutId="navIndicator"
-                  className="absolute bottom-0 w-10 h-1 bg-accent rounded-t-full"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
+              <item.icon 
+                className={cn(
+                  "size-[22px] transition-colors",
+                  isActive ? "text-[#35C2C1]" : "text-muted-foreground/60"
+                )} 
+              />
             </Link>
-          </motion.div>
-        );
-      })}
-      
-      <motion.button 
-        whileTap={{ scale: 0.9 }}
-        onClick={actions.clearSession}
-        className="flex flex-col items-center justify-center py-2 px-4 text-muted-foreground hover:text-destructive transition-colors"
-      >
-        <LogOut className="w-6 h-6 mb-1 stroke-2" />
-        <span className="text-[10px] font-bold opacity-70">Logout</span>
-      </motion.button>
-    </nav>
+          );
+        })}
+
+        {/* Add Button (center) */}
+        <div className="flex flex-1 items-center justify-center h-full">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => brain.actions.setIsDrawerOpen(true)}
+            className="bg-[#35C2C1] flex items-center justify-center rounded-full shrink-0 size-[51px] cursor-pointer shadow-[0_4px_20px_rgba(53,194,193,0.4)]"
+          >
+            <Plus className="size-[25.5px] text-white" />
+          </motion.button>
+        </div>
+
+        {/* Right Side Items */}
+        {rightItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link 
+              key={item.href}
+              href={item.href}
+              className="flex flex-1 flex-col items-center justify-center h-full"
+            >
+              <item.icon 
+                className={cn(
+                  "size-[22px] transition-colors",
+                  isActive ? "text-[#35C2C1]" : "text-muted-foreground/60"
+                )} 
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }

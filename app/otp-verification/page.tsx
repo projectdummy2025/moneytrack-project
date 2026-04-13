@@ -39,10 +39,10 @@ export default function OtpVerificationPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto">
       {/* Title & Description */}
-      <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 mt-10">
+      <h1 className="text-heading-xl font-bold text-[#1e232c] leading-tight mb-3 mt-10">
         OTP Verification
       </h1>
-      <p className="text-[16px] font-medium text-[#838ba1] leading-relaxed mb-8">
+      <p className="text-body-lg font-medium text-[#838ba1] leading-relaxed mb-8">
         Enter the verification code we just sent on your email address.
       </p>
 
@@ -58,7 +58,7 @@ export default function OtpVerificationPage() {
             value={digit}
             onChange={(e) => handleChange(index, e)}
             onKeyDown={(e) => handleKeyDown(index, e)}
-            className={`w-[46px] h-[56px] text-center rounded-xl outline-none transition-all font-bold text-[20px] shrink-0 ${
+            className={`w-[46px] h-[56px] text-center rounded-xl outline-none transition-all font-bold text-heading shrink-0 ${
               digit 
                 ? "border-[1.5px] border-[#35c2c1] bg-white text-[#1e232c]" 
                 : "border border-[#e8ecf4] bg-[#f7f8f9] text-[#1e232c]"
@@ -70,14 +70,14 @@ export default function OtpVerificationPage() {
       {/* Verify Button */}
       <button
         onClick={handleVerify}
-        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
+        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-body text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
       >
         Verify
       </button>
 
       {/* Resend link */}
       <div className="mt-auto pb-6 text-center pt-10">
-        <p className="text-[15px] text-[#1e232c] font-medium">
+        <p className="text-body text-[#1e232c] font-medium">
           Didn&apos;t received code?{" "}
           <button
             onClick={() => {}}

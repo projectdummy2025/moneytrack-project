@@ -16,10 +16,10 @@ export default function CreateNewPasswordPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col px-6 py-10 max-w-[430px] mx-auto">
       {/* Title & Description */}
-      <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 mt-10">
+      <h1 className="text-heading-xl font-bold text-[#1e232c] leading-tight mb-3 mt-10">
         Create new password
       </h1>
-      <p className="text-[16px] font-medium text-[#8391a1] leading-relaxed mb-8">
+      <p className="text-body-lg font-medium text-[#8391a1] leading-relaxed mb-8">
         Your new password must be unique from those previously used.
       </p>
 
@@ -48,7 +48,7 @@ export default function CreateNewPasswordPage() {
       {/* Reset Password Button */}
       <button
         onClick={handleReset}
-        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
+        className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-body text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
       >
         Reset Password
       </button>

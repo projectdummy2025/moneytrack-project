@@ -10,30 +10,42 @@ interface RecordCoreProps {
   onSuccess?: () => void;
 }
 
+export type RecordType = "expense" | "income" | "swap";
+
 export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
   const { wallets } = useWallets();
   const { categories } = useCategories();
 
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"expense" | "income">("expense");
+  const [type, setType] = useState<RecordType>("expense");
   const [selectedWalletId, setSelectedWalletId] = useState("");
+  const [targetWalletId, setTargetWalletId] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [memo, setMemo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (wallets.length > 0 && !selectedWalletId) {
       setSelectedWalletId(wallets[0].id);
     }
-  }, [wallets, selectedWalletId]);
+    if (wallets.length > 1 && !targetWalletId) {
+      setTargetWalletId(wallets[1].id);
+    }
+  }, [wallets, selectedWalletId, targetWalletId]);
 
   useEffect(() => {
-    const filteredCategories = categories.filter(c => c.classification === type);
-    if (filteredCategories.length > 0) {
-      setSelectedCategoryId(filteredCategories[0].id);
+    if (type !== "swap") {
+      const filteredCategories = categories.filter(c => c.classification === type);
+      if (filteredCategories.length > 0) {
+        setSelectedCategoryId(filteredCategories[0].id);
+      } else {
+        setSelectedCategoryId("");
+      }
     } else {
       setSelectedCategoryId("");
     }
+    setError("");
   }, [type, categories]);
 
   useEffect(() => {
@@ -41,6 +53,9 @@ export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
+      setAmount("");
+      setMemo("");
+      setError("");
     }
     return () => {
       document.body.style.overflow = "unset";
@@ -48,36 +63,69 @@ export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
   }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!amount || !selectedWalletId || !selectedCategoryId) {
-      alert("Please fill all required fields");
+    setError("");
+    if (!amount || !selectedWalletId) {
+      setError("Please fill required fields");
       return;
+    }
+
+    if (type === "swap") {
+      if (!targetWalletId) {
+        setError("Please select destination wallet");
+        return;
+      }
+      if (selectedWalletId === targetWalletId) {
+        setError("Source and target wallets must be different");
+        return;
+      }
+    } else {
+      if (!selectedCategoryId) {
+        setError("Please select a category");
+        return;
+      }
     }
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          walletId: selectedWalletId,
-          categoryId: selectedCategoryId,
-          memo,
-          transactedAt: new Date().toISOString(),
-        }),
-      });
+      let response;
+      if (type === "swap") {
+        response = await fetch("/api/wallet-transfers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sourceId: selectedWalletId,
+            targetId: targetWalletId,
+            amount,
+            memo,
+            transactedAt: new Date().toISOString(),
+          }),
+        });
+      } else {
+        response = await fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount,
+            walletId: selectedWalletId,
+            categoryId: selectedCategoryId,
+            memo,
+            transactedAt: new Date().toISOString(),
+          }),
+        });
+      }
 
       if (!response.ok) {
-        throw new Error("Failed to create transaction");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to process request");
       }
 
       onSuccess?.();
       onClose();
       setAmount("");
       setMemo("");
-    } catch (error) {
-      console.error(error);
-      alert("Error creating transaction");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,9 +138,11 @@ export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
       amount,
       type,
       selectedWalletId,
+      targetWalletId,
       selectedCategoryId,
       memo,
       isSubmitting,
+      error,
       wallets,
       filteredCategories,
     },
@@ -100,6 +150,7 @@ export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
       setAmount,
       setType,
       setSelectedWalletId,
+      setTargetWalletId,
       setSelectedCategoryId,
       setMemo,
       handleSubmit,

@@ -4,13 +4,12 @@ import React, { useState } from "react";
 import {
   Search,
   Filter,
-  X,
   ArrowUpRight,
   ArrowDownLeft,
   Edit3,
   Trash2,
   Loader2,
-  Calendar,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency, cn } from "@core/utils/HelperTool";
@@ -41,9 +40,9 @@ interface TraceLineProps {
     setFilterDateTo: (val: string) => void;
     setShowFilters: (val: boolean) => void;
     clearFilters: () => void;
-    setEditingTransaction: (txn: any) => void;
+    setEditingTransaction: (txn: { id: string; amount: string; memo: string; walletId: string; categoryId: string; transactedAt: string } | null) => void;
     handleUpdate: (data: { amount: string; memo: string; walletId?: string; categoryId?: string; transactedAt?: string }) => Promise<void>;
-    setDeleteConfirm: (confirm: any) => void;
+    setDeleteConfirm: (confirm: { id: string; memo: string } | null) => void;
     handleDelete: () => Promise<void>;
   };
 }
@@ -73,7 +72,7 @@ export function TraceLine({ state, actions }: TraceLineProps) {
               placeholder="Search history..."
               value={state.searchQuery}
               onChange={(e) => actions.setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all outline-none font-bold text-sm"
+              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all outline-none text-body font-medium"
             />
           </div>
           <button
@@ -104,10 +103,10 @@ export function TraceLine({ state, actions }: TraceLineProps) {
             className="bg-card rounded-2xl border border-border p-4 overflow-hidden"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-foreground">Filters</h3>
+              <h3 className="text-body font-bold text-foreground">Filters</h3>
               <button
                 onClick={actions.clearFilters}
-                className="text-xs text-accent font-bold hover:underline"
+                className="text-meta-xs font-bold text-accent hover:underline uppercase tracking-wide"
               >
                 Clear All
               </button>
@@ -116,11 +115,11 @@ export function TraceLine({ state, actions }: TraceLineProps) {
             <div className="grid grid-cols-2 gap-3">
               {/* Wallet Filter */}
               <div>
-                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Wallet</label>
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Wallet</label>
                 <select
                   value={state.filterWallet}
                   onChange={(e) => actions.setFilterWallet(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-xs font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
                 >
                   <option value="">All Wallets</option>
                   {state.wallets.map(w => (
@@ -131,11 +130,11 @@ export function TraceLine({ state, actions }: TraceLineProps) {
 
               {/* Category Filter */}
               <div>
-                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Category</label>
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Category</label>
                 <select
                   value={state.filterCategory}
                   onChange={(e) => actions.setFilterCategory(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-xs font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
                 >
                   <option value="">All Categories</option>
                   {state.categories.map(c => (
@@ -146,23 +145,23 @@ export function TraceLine({ state, actions }: TraceLineProps) {
 
               {/* Date From */}
               <div>
-                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">From Date</label>
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">From Date</label>
                 <input
                   type="date"
                   value={state.filterDateFrom}
                   onChange={(e) => actions.setFilterDateFrom(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-xs font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
                 />
               </div>
 
               {/* Date To */}
               <div>
-                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">To Date</label>
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">To Date</label>
                 <input
                   type="date"
                   value={state.filterDateTo}
                   onChange={(e) => actions.setFilterDateTo(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-xs font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
                 />
               </div>
             </div>
@@ -172,18 +171,18 @@ export function TraceLine({ state, actions }: TraceLineProps) {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-card p-5 rounded-3xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Net Balance</p>
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
+          <p className="text-meta-xs font-bold text-muted-foreground uppercase tracking-wider">Net Balance</p>
           <p className={cn(
-            "text-lg font-extrabold tracking-tight",
+            "text-display-md font-black tracking-tight",
             state.totals.monthNet >= 0 ? "text-emerald-600" : "text-rose-600"
           )}>
             {state.totals.monthNet >= 0 ? '+' : ''} {formatCurrency(state.totals.monthNet)}
           </p>
         </div>
-        <div className="bg-card p-5 rounded-3xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Records</p>
-          <p className="text-lg font-extrabold tracking-tight text-foreground">{state.totals.transCount}</p>
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
+          <p className="text-meta-xs font-bold text-muted-foreground uppercase tracking-wider">Records</p>
+          <p className="text-display-md font-black tracking-tight text-foreground">{state.totals.transCount}</p>
         </div>
       </div>
 
@@ -197,12 +196,12 @@ export function TraceLine({ state, actions }: TraceLineProps) {
           state.groupedTransactions.map(([date, items], gIdx) => (
             <div key={date} className="flex flex-col gap-3">
               <div className="flex items-center px-1">
-                <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
+                <h3 className="text-meta-xs font-semibold text-muted-foreground uppercase">
                   {date}
                 </h3>
               </div>
 
-              <div className="flex flex-col bg-card rounded-3xl border border-border divide-y divide-border/50 shadow-sm shadow-black/5 overflow-hidden">
+              <div className="flex flex-col bg-card rounded-2xl border border-border divide-y divide-border/50 shadow-sm shadow-black/5 overflow-hidden">
                 {items.map((item, iIdx) => (
                   <HistoryItem
                     key={item.id}
@@ -229,14 +228,11 @@ export function TraceLine({ state, actions }: TraceLineProps) {
         )}
       </div>
 
-      {/* Edit Transaction Dialog */}
       <EditTransactionDialog
         isOpen={!!state.editingTransaction}
         onClose={() => actions.setEditingTransaction(null)}
         onUpdate={actions.handleUpdate}
         transaction={state.editingTransaction}
-        wallets={state.wallets}
-        categories={state.categories}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -267,7 +263,7 @@ function HistoryItem({
       animate={{ opacity: 1 }}
       transition={{ delay }}
       whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group"
+      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group relative"
     >
       <div className={cn(
         "w-10 h-10 rounded-2xl flex items-center justify-center transition-all",
@@ -283,24 +279,25 @@ function HistoryItem({
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-[14px] tracking-tight truncate text-foreground">
+        <h4 className="text-body-sm font-bold tracking-tight truncate text-foreground">
           {item.memo || item.categoryName}
         </h4>
-        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+        <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">
           {item.categoryName} • {new Date(item.transactedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
 
       <div className="text-right">
         <p className={cn(
-          "font-bold text-[14px] tracking-tight",
+          "text-body-sm font-bold tracking-tight",
           item.classification === 'income' ? 'text-emerald-600' : 'text-foreground'
         )}>
           {item.classification === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
         </p>
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+      {/* Absolute positioning ensures the buttons don't push the amount to the left, keeping margins balanced */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all bg-card/60 backdrop-blur-sm pl-4 pr-1 py-1 rounded-xl">
         <button
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
           className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-primary flex items-center justify-center transition-all"
@@ -323,15 +320,11 @@ function EditTransactionDialog({
   onClose,
   onUpdate,
   transaction,
-  wallets,
-  categories,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (data: { amount: string; memo: string; walletId?: string; categoryId?: string; transactedAt?: string }) => Promise<void>;
   transaction: { id: string; amount: string; memo: string; walletId: string; categoryId: string; transactedAt: string } | null;
-  wallets: Wallet[];
-  categories: Category[];
 }) {
   const [amount, setAmount] = useState(transaction?.amount || "");
   const [memo, setMemo] = useState(transaction?.memo || "");
@@ -376,7 +369,7 @@ function EditTransactionDialog({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Edit Transaction</h2>
+              <h2 className="text-heading font-extrabold text-foreground">Edit Transaction</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors">
                 <X className="w-4 h-4" />
               </button>
@@ -384,30 +377,30 @@ function EditTransactionDialog({
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">Amount</label>
+                <label className="block text-meta font-semibold text-foreground mb-1.5">Amount</label>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">Note</label>
+                <label className="block text-meta font-semibold text-foreground mb-1.5">Note</label>
                 <input
                   type="text"
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting || !amount}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
@@ -455,8 +448,8 @@ function DeleteTransactionDialog({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
           >
             <div className="text-center mb-4">
-              <h2 className="text-lg font-bold text-foreground">Delete Transaction?</h2>
-              <p className="text-sm text-muted-foreground mt-2">
+              <h2 className="text-heading font-extrabold text-foreground">Delete Transaction?</h2>
+              <p className="text-body-sm font-medium text-muted-foreground mt-2">
                 Are you sure you want to delete &quot;{item.memo}&quot;? The wallet balance will be restored.
               </p>
             </div>
@@ -464,13 +457,13 @@ function DeleteTransactionDialog({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 h-[48px] rounded-xl bg-secondary text-foreground font-bold text-sm flex items-center justify-center transition-all active:scale-95"
+                className="flex-1 h-[48px] rounded-xl bg-secondary text-foreground text-body-sm font-bold flex items-center justify-center transition-all active:scale-95"
               >
                 Cancel
               </button>
               <button
                 onClick={onConfirm}
-                className="flex-1 h-[48px] rounded-xl bg-rose-500 text-white font-bold text-sm flex items-center justify-center transition-all active:scale-95"
+                className="flex-1 h-[48px] rounded-xl bg-rose-500 text-white text-body-sm font-bold flex items-center justify-center transition-all active:scale-95"
               >
                 Delete
               </button>

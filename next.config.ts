@@ -4,7 +4,7 @@ import os from "os";
 const getLocalIps = () => {
   try {
     return Object.values(os.networkInterfaces()).flat().map(i => i?.address || "").filter(Boolean);
-  } catch (e) {
+  } catch {
     return [];
   }
 };

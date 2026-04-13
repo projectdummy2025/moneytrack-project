@@ -2,11 +2,6 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import type {
-  Props as DefaultTooltipContentProps,
-  Payload as TooltipPayloadItem,
-} from "recharts/types/component/DefaultTooltipContent";
-import type { TooltipContentProps } from "recharts/types/component/Tooltip";
 import type { TooltipPayload } from "recharts/types/state/tooltipSlice";
 import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
 
@@ -117,7 +112,6 @@ function ChartTooltipContent({
   className,
   indicator = "dot",
   hideLabel = false,
-  hideIndicator = false,
   label,
   labelFormatter,
   labelClassName,
@@ -125,16 +119,20 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: Omit<DefaultTooltipContentProps, "payload"> &
-  React.ComponentProps<"div"> & {
-    hideLabel?: boolean;
-    hideIndicator?: boolean;
-    indicator?: "line" | "dot" | "dashed";
-    nameKey?: string;
-    labelKey?: string;
-    active?: boolean;
-    payload?: TooltipPayload;
-  }) {
+}: React.ComponentProps<"div"> & {
+  active?: boolean;
+  payload?: TooltipPayload;
+  indicator?: "line" | "dot" | "dashed";
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+  label?: string | number | React.ReactNode;
+  labelFormatter?: (value: string | number | React.ReactNode, payload: TooltipPayload) => React.ReactNode;
+  labelClassName?: string;
+  formatter?: (value: number, name: string, item: unknown, index: number, payload: unknown) => React.ReactNode;
+  color?: string;
+  nameKey?: string;
+  labelKey?: string;
+}) {
   const { config } = useChart();
 
   const tooltipLabel = React.useMemo(() => {
