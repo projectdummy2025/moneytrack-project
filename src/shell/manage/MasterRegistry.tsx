@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChevronRight, Trash2, Edit3, LucideIcon } from "lucide-react";
+import { ChevronRight, Trash2, Edit3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn, formatCurrency } from "@core/utils/HelperTool";
 
@@ -10,9 +10,10 @@ interface ManagementItemProps {
   title: string;
   subtitle: string;
   value?: string | number;
-  icon: LucideIcon;
+  icon?: React.ElementType | string;
+  icon_name?: string;
   colorClass?: string;
-  delay: number;
+  delay?: number;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -41,11 +42,11 @@ export function MasterRegistry({
   return (
     <div className="flex flex-col gap-3 font-['Urbanist',sans-serif]">
       {items.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground bg-secondary/50 rounded-3xl border border-dashed border-border">
+        <div className="py-16 text-center text-muted-foreground bg-secondary/50 rounded-2xl border border-dashed border-border">
           <p className="text-sm font-medium italic opacity-50">No items added yet</p>
         </div>
       ) : (
-        <div className="bg-card rounded-3xl border border-border divide-y divide-border/50 shadow-sm shadow-black/5 overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border divide-y divide-border/50 shadow-sm shadow-black/5 overflow-hidden">
           {items.map((item, idx) => (
             <ManagementItem
               key={item.id || idx}
@@ -60,45 +61,41 @@ export function MasterRegistry({
   );
 }
 
-function ManagementItem({
-  title,
-  subtitle,
-  value,
-  icon: Icon,
-  colorClass,
-  delay,
-  onEdit,
-  onDelete,
-}: ManagementItemProps) {
+function ManagementItem({ title, subtitle, value, icon: Icon, colorClass, delay = 0, onEdit, onDelete }: ManagementItemProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay }}
       whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group"
+      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group relative"
     >
       <div className={cn(
         "w-11 h-11 rounded-2xl flex items-center justify-center transition-all border border-border/50",
         colorClass || "text-primary bg-secondary"
       )}>
-        <Icon className="w-5 h-5 stroke-[2px]" />
+        {Icon && typeof Icon !== 'string' ? (
+          <Icon className="w-5 h-5 stroke-[2px]" />
+        ) : (
+          <div className="w-5 h-5 rounded-full bg-muted-foreground/20" />
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-[14px] tracking-tight text-foreground truncate">{title}</h4>
-        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{subtitle}</p>
+        <h4 className="text-body-sm font-bold tracking-tight text-foreground truncate">{title}</h4>
+        <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">{subtitle}</p>
       </div>
 
       {value !== undefined && (
         <div className="text-right">
-          <p className="font-bold text-[14px] tracking-tight text-foreground">
+          <p className="text-body-sm font-bold tracking-tight text-foreground">
             {typeof value === 'number' ? formatCurrency(value) : value}
           </p>
         </div>
       )}
 
-      <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-all">
+      {/* Action overlay: Absolute positioning keeps the content flow symmetric */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all bg-card/80 backdrop-blur-sm pl-4 pr-1 py-1 rounded-xl">
         {onEdit && (
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
@@ -115,9 +112,12 @@ function ManagementItem({
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         )}
+        <ChevronRight className="w-4 h-4 text-muted-foreground/30 ml-1" />
       </div>
 
-      <ChevronRight className="w-4 h-4 text-muted-foreground/30 ml-1" />
+      {/* Fixed Chevron placeholder when not hovered to maintain some visual hint if desired, 
+          but for maximum balance we keep it hidden or absolute as above. 
+          Here I've moved the original chevron into the absolute group. */}
     </motion.div>
   );
 }
