@@ -2,27 +2,31 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
 import { Wallet, Category } from "@core/types/DataCore";
+import { RecordType } from "@core/hooks/RecordCore";
 
 interface QuickRecordProps {
   isOpen: boolean;
   onClose: () => void;
   state: {
     amount: string;
-    type: "expense" | "income";
+    type: RecordType;
     selectedWalletId: string;
+    targetWalletId: string;
     selectedCategoryId: string;
     memo: string;
     isSubmitting: boolean;
+    error: string;
     wallets: Wallet[];
     filteredCategories: Category[];
   };
   actions: {
     setAmount: (val: string) => void;
-    setType: (val: "expense" | "income") => void;
+    setType: (val: RecordType) => void;
     setSelectedWalletId: (val: string) => void;
+    setTargetWalletId: (val: string) => void;
     setSelectedCategoryId: (val: string) => void;
     setMemo: (val: string) => void;
     handleSubmit: () => void;
@@ -30,6 +34,8 @@ interface QuickRecordProps {
 }
 
 export function QuickRecord({ isOpen, onClose, state, actions }: QuickRecordProps) {
+  const isSwap = state.type === "swap";
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -39,144 +45,195 @@ export function QuickRecord({ isOpen, onClose, state, actions }: QuickRecordProp
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[60] bg-[#0f1717]/80 backdrop-blur-[2px]"
           />
 
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] bg-background rounded-t-[2rem] shadow-2xl flex flex-col max-h-[92vh] w-full max-w-[430px] overflow-hidden font-['Urbanist',sans-serif]"
+            transition={{ type: "spring", damping: 32, stiffness: 300 }}
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[70] bg-[#162424] rounded-t-[24px] flex flex-col h-[88vh] w-full max-w-[430px] overflow-hidden font-['Urbanist',sans-serif]"
           >
-            {/* Handle */}
-            <div className="w-full flex justify-center py-3">
-              <div className="w-12 h-1.5 rounded-full bg-muted" />
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-0 shrink-0">
+              <div className="bg-white/10 h-[4px] rounded-full w-[60px]" />
             </div>
 
-            {/* Header */}
-            <div className="px-6 py-2 flex items-center justify-between border-b border-border/50">
-              <button 
+            {/* Title row */}
+            <div className="flex items-center justify-between px-[15px] pt-[12px] pb-0 shrink-0">
+              <p className="text-heading-sm font-extrabold text-white tracking-tight">Add Record</p>
+              <button
                 onClick={onClose}
-                className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="cursor-pointer flex items-center justify-center size-[38px] rounded-full bg-white/5 active:bg-white/10 transition-colors"
               >
-                <X className="w-6 h-6" />
-              </button>
-              <h3 className="text-lg font-bold text-foreground">New Record</h3>
-              <button 
-                onClick={actions.handleSubmit}
-                disabled={state.isSubmitting || !state.amount}
-                className="p-2 -mr-2 text-accent disabled:opacity-30 transition-all"
-              >
-                <Check className="w-6 h-6 stroke-[3px]" />
+                <X className="w-5 h-5 text-white" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 pb-12">
-              {/* Type Switcher */}
-              <div className="flex bg-secondary p-1 rounded-2xl w-full">
-                <button 
-                  onClick={() => actions.setType("expense")}
-                  className={cn(
-                    "flex-1 py-3 rounded-xl text-xs font-bold transition-all",
-                    state.type === "expense" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-                  )}
+            {/* Tab bar */}
+            <div className="flex items-start shrink-0 px-0 mt-[10px]">
+              {(["expense", "income", "swap"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => actions.setType(tab)}
+                  className="flex flex-1 flex-col items-center gap-[16px] cursor-pointer"
                 >
-                  Expense
-                </button>
-                <button 
-                  onClick={() => actions.setType("income")}
-                  className={cn(
-                    "flex-1 py-3 rounded-xl text-xs font-bold transition-all",
-                    state.type === "income" ? "bg-background text-emerald-600 shadow-sm" : "text-muted-foreground"
-                  )}
-                >
-                  Income
-                </button>
-              </div>
-
-              {/* Amount Input Section */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-full relative flex items-baseline justify-center">
-                  <span className="text-2xl font-bold text-muted-foreground/40 mr-2">IDR</span>
-                  <input 
-                    type="number"
-                    autoFocus
-                    placeholder="0"
-                    value={state.amount}
-                    onChange={(e) => actions.setAmount(e.target.value)}
-                    className="bg-transparent text-center text-6xl font-extrabold tracking-tight outline-none placeholder:text-muted w-[200px]"
+                  <span
+                    className={cn(
+                      "text-body font-bold capitalize transition-colors",
+                      state.type === tab
+                        ? tab === "expense" ? "text-[#db3c3c]" : tab === "income" ? "text-[#35C2C1]" : "text-[#3b82f6]"
+                        : "text-white/40"
+                    )}
+                  >
+                    {tab}
+                  </span>
+                  <div
+                    className={cn(
+                      "w-full h-[2px] transition-colors",
+                      state.type === tab 
+                        ? tab === "expense" ? "bg-[#db3c3c]" : tab === "income" ? "bg-[#35C2C1]" : "bg-[#3b82f6]"
+                        : "bg-white/5"
+                    )}
                   />
-                </div>
-                <div className="w-full bg-secondary rounded-2xl p-4">
-                  <input 
-                    type="text"
-                    placeholder="Add a note (optional)..."
-                    value={state.memo}
-                    onChange={(e) => actions.setMemo(e.target.value)}
-                    className="w-full bg-transparent text-[15px] font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
-                  />
-                </div>
-              </div>
-
-              {/* Selector Sections */}
-              <div className="flex flex-col gap-8">
-                {/* Wallet Selection */}
-                <div className="flex flex-col gap-3">
-                  <p className="text-[13px] font-bold text-foreground ml-1">Wallet</p>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
-                    {state.wallets.map((wallet) => (
-                      <button
-                        key={wallet.id}
-                        onClick={() => actions.setSelectedWalletId(wallet.id)}
-                        className={cn(
-                          "px-5 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-bold",
-                          state.selectedWalletId === wallet.id 
-                            ? "bg-accent border-accent text-white shadow-md shadow-accent/20" 
-                            : "bg-secondary border-transparent text-muted-foreground"
-                        )}
-                      >
-                        {wallet.walletName}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Category Selection */}
-                <div className="flex flex-col gap-3">
-                  <p className="text-[13px] font-bold text-foreground ml-1">Category</p>
-                  <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
-                    {state.filteredCategories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        onClick={() => actions.setSelectedCategoryId(cat.id)}
-                        className={cn(
-                          "px-5 py-3 rounded-2xl border transition-all whitespace-nowrap text-xs font-bold",
-                          state.selectedCategoryId === cat.id 
-                            ? "bg-primary border-primary text-white shadow-md" 
-                            : "bg-secondary border-transparent text-muted-foreground"
-                        )}
-                      >
-                        {cat.categoryName}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Save Button (Mobile Style) */}
-              <div className="mt-4 safe-bottom">
-                <button 
-                  onClick={actions.handleSubmit}
-                  disabled={state.isSubmitting || !state.amount}
-                  className={cn(
-                    "w-full py-4 rounded-2xl bg-primary text-primary-foreground text-[15px] font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
-                    (state.isSubmitting || !state.amount) && "opacity-50 grayscale cursor-not-allowed"
-                  )}
-                >
-                  {state.isSubmitting ? "Processing..." : "Save Transaction"}
                 </button>
+              ))}
+            </div>
+
+            {/* Amount display */}
+            <div className="shrink-0 px-[15px] pb-[20px] pt-[15px] text-center">
+              <p className="text-meta-xs font-bold text-white/40 uppercase tracking-widest mb-[5px]">
+                {state.type} amount
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                {state.type === "expense" && <span className="text-[#db3c3c] text-display-xl font-black">-</span>}
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={state.amount}
+                  onChange={(e) => actions.setAmount(e.target.value)}
+                  className={cn(
+                    "bg-transparent text-center text-display-xl font-black outline-none w-full max-w-[300px]",
+                    state.type === "expense" ? "text-[#db3c3c]" : state.type === "income" ? "text-[#35C2C1]" : "text-[#3b82f6]"
+                  )}
+                />
               </div>
+            </div>
+
+            <div className="bg-white/5 h-px w-full shrink-0" />
+
+            {/* Scrollable form fields */}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-[#162424]">
+              {state.error && (
+                <div className="mx-[15px] mt-[15px] p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-meta-xs font-bold text-center uppercase tracking-wide">
+                  {state.error}
+                </div>
+              )}
+
+              {/* Account Selection */}
+              <div className="flex flex-col gap-3 p-[15px]">
+                <p className="text-meta-xs font-bold text-white/40 uppercase tracking-widest">
+                  {isSwap ? "Source Account" : "Account"}
+                </p>
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                  {state.wallets.map((wallet) => (
+                    <button
+                      key={wallet.id}
+                      onClick={() => actions.setSelectedWalletId(wallet.id)}
+                      className={cn(
+                        "px-[18px] py-[10px] rounded-[35px] border transition-all whitespace-nowrap text-body-sm font-bold",
+                        state.selectedWalletId === wallet.id
+                          ? "bg-[#35C2C1]/10 border-[#35C2C1] text-[#35C2C1]"
+                          : "bg-white/5 border-white/5 text-white/40"
+                      )}
+                    >
+                      {wallet.walletName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {isSwap && (
+                <>
+                  <div className="bg-white/5 h-px w-full" />
+                  {/* Destination Account Selection */}
+                  <div className="flex flex-col gap-3 p-[15px]">
+                    <p className="text-meta-xs font-bold text-white/40 uppercase tracking-widest">Destination Account</p>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                      {state.wallets.map((wallet) => (
+                        <button
+                          key={wallet.id}
+                          onClick={() => actions.setTargetWalletId(wallet.id)}
+                          className={cn(
+                            "px-[18px] py-[10px] rounded-[35px] border transition-all whitespace-nowrap text-body-sm font-bold",
+                            state.targetWalletId === wallet.id
+                              ? "bg-[#3b82f6]/10 border-[#3b82f6] text-[#3b82f6]"
+                              : "bg-white/5 border-white/5 text-white/40"
+                          )}
+                        >
+                          {wallet.walletName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {!isSwap && (
+                <>
+                  <div className="bg-white/5 h-px w-full" />
+                  {/* Category Selection */}
+                  <div className="flex flex-col gap-3 p-[15px]">
+                    <p className="text-meta-xs font-bold text-white/40 uppercase tracking-widest">Category</p>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                      {state.filteredCategories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => actions.setSelectedCategoryId(cat.id)}
+                          className={cn(
+                            "px-[18px] py-[10px] rounded-[35px] border transition-all whitespace-nowrap text-body-sm font-bold",
+                            state.selectedCategoryId === cat.id
+                              ? "bg-[#35C2C1]/10 border-[#35C2C1] text-[#35C2C1]"
+                              : "bg-white/5 border-white/5 text-white/40"
+                          )}
+                        >
+                          {cat.categoryName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="bg-white/5 h-px w-full" />
+
+              {/* Notes */}
+              <div className="px-[15px] py-[15px]">
+                <p className="text-meta-xs font-bold text-white/40 uppercase tracking-widest mb-[10px]">Notes</p>
+                <textarea
+                  placeholder="What was this for?..."
+                  value={state.memo}
+                  onChange={(e) => actions.setMemo(e.target.value)}
+                  className="w-full bg-white/5 rounded-2xl p-4 text-body font-medium text-white/80 outline-none resize-none h-24 border border-white/5 focus:border-[#35C2C1]/30 transition-all placeholder:text-white/20"
+                />
+              </div>
+            </div>
+
+            {/* Add Record Button */}
+            <div className="shrink-0 px-[15px] pb-[40px] pt-[15px] bg-[#162424]">
+              <button
+                onClick={actions.handleSubmit}
+                disabled={state.isSubmitting || !state.amount || !state.selectedWalletId || (!isSwap && !state.selectedCategoryId) || (isSwap && !state.targetWalletId)}
+                className={cn(
+                  "w-full bg-[#35C2C1] h-[54px] rounded-2xl flex items-center justify-center active:scale-[0.98] transition-all shadow-lg shadow-[#35C2C1]/20",
+                  (state.isSubmitting || !state.amount) && "opacity-50 grayscale cursor-not-allowed"
+                )}
+              >
+                <p className="text-heading-sm font-bold text-white">
+                  {state.isSubmitting ? "Processing..." : isSwap ? "Confirm Swap" : "Record " + state.type}
+                </p>
+              </button>
             </div>
           </motion.div>
         </>
