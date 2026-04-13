@@ -10,7 +10,7 @@
   --card-foreground: #1e232c;
   --popover: #ffffff;
   --popover-foreground: #1e232c;
-  --primary: #1e232c;
+  --primary: #35c2c1;
   --primary-foreground: #ffffff;
   --secondary: #f7f8f9;
   --secondary-foreground: #1e232c;
@@ -30,24 +30,24 @@
 }
 
 .dark {
-  --background: #000000;
+  --background: #0f1717;
   --foreground: #fafafa;
-  --card: #09090b;
+  --card: #162424;
   --card-foreground: #fafafa;
-  --popover: #09090b;
+  --popover: #162424;
   --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
+  --primary: #35c2c1;
+  --primary-foreground: #ffffff;
+  --secondary: #1e2e2e;
   --secondary-foreground: #fafafa;
-  --muted: #27272a;
+  --muted: #1e2e2e;
   --muted-foreground: #a1a1aa;
   --accent: #35c2c1;
   --accent-foreground: #fafafa;
   --destructive: #ef4444;
   --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
+  --border: #1e2e2e;
+  --input: #1e2e2e;
   --ring: #35c2c1;
 }
 
@@ -71,6 +71,49 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Typography Scale */
+  --font-size-display-xl: 2.25rem;
+  --font-size-display-xl--line-height: 2.5rem;
+  
+  --font-size-display-lg: 1.875rem;
+  --font-size-display-lg--line-height: 2.25rem;
+
+  --font-size-display-md: 1.5rem;
+  --font-size-display-md--line-height: 2rem;
+
+  --font-size-heading-xl: 1.875rem;
+  --font-size-heading-xl--line-height: 2.25rem;
+
+  --font-size-heading-lg: 1.5rem;
+  --font-size-heading-lg--line-height: 2rem;
+
+  --font-size-heading-md: 1.25rem;
+  --font-size-heading-md--line-height: 1.75rem;
+
+  --font-size-heading-sm: 1.125rem;
+  --font-size-heading-sm--line-height: 1.5rem;
+
+  --font-size-body-lg: 1rem;
+  --font-size-body-lg--line-height: 1.5rem;
+
+  --font-size-body: 0.875rem;
+  --font-size-body--line-height: 1.25rem;
+
+  --font-size-body-sm: 0.8125rem;
+  --font-size-body-sm--line-height: 1.125rem;
+
+  --font-size-body-xs: 0.75rem;
+  --font-size-body-xs--line-height: 1rem;
+
+  --font-size-meta: 0.75rem;
+  --font-size-meta--line-height: 1rem;
+
+  --font-size-meta-xs: 0.6875rem;
+  --font-size-meta-xs--line-height: 1rem;
+
+  --font-size-meta-2xs: 0.625rem;
+  --font-size-meta-2xs--line-height: 0.75rem;
 }
 
 @layer base {
