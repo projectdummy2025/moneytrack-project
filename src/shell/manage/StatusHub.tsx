@@ -6,11 +6,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@core/utils/HelperTool";
 import { MasterRegistry } from "./MasterRegistry";
 
+interface WalletItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon?: string;
+  color?: string;
+}
+
+interface CategoryItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon_name?: string;
+  color?: string;
+}
+
 interface StatusHubProps {
   state: {
     activeTab: "wallets" | "categories";
-    walletItems: any[];
-    categoryItems: any[];
+    walletItems: WalletItem[];
+    categoryItems: CategoryItem[];
     isLoading: boolean;
     itemCount: number;
     isAddWalletOpen: boolean;
@@ -30,24 +46,73 @@ interface StatusHubProps {
     createCategory: (name: string, classification: "income" | "expense", icon?: string, color?: string) => Promise<void>;
     handleEditWallet: (id: string, name: string, type: string) => void;
     handleUpdateWallet: (name: string, type: string) => Promise<void>;
-    setEditingWallet: (wallet: any) => void;
+    setEditingWallet: (wallet: { id: string; name: string; type: string } | null) => void;
     handleEditCategory: (id: string, name: string, classification: "income" | "expense", icon?: string, color?: string) => void;
     handleUpdateCategory: (name: string, classification: "income" | "expense", icon?: string, color?: string) => Promise<void>;
-    setEditingCategory: (category: any) => void;
-    setDeleteConfirm: (confirm: any) => void;
+    setEditingCategory: (category: { id: string; name: string; classification: "income" | "expense"; icon?: string; color?: string } | null) => void;
+    setDeleteConfirm: (confirm: { type: "wallet" | "category"; id: string; name: string } | null) => void;
     handleDelete: () => Promise<void>;
   };
 }
 
-export function StatusHub({ state, actions }: StatusHubProps) {
+export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps & { hideHeader?: boolean }) {
+  if (hideHeader) {
+    return (
+      <>
+        {/* Add Wallet Dialog */}
+        <AddWalletDialog
+          isOpen={state.isAddWalletOpen}
+          onClose={() => actions.setIsAddWalletOpen(false)}
+          onCreate={actions.createWallet}
+          isCreating={state.isCreatingWallet}
+        />
+
+        {/* Edit Wallet Dialog */}
+        <EditWalletDialog
+          isOpen={!!state.editingWallet}
+          onClose={() => actions.setEditingWallet(null)}
+          onUpdate={actions.handleUpdateWallet}
+          wallet={state.editingWallet}
+          isUpdating={state.isCreatingWallet}
+        />
+
+        {/* Add Category Dialog */}
+        <AddCategoryDialog
+          isOpen={state.isAddCategoryOpen}
+          onClose={() => actions.setIsAddCategoryOpen(false)}
+          onCreate={actions.createCategory}
+          isCreating={state.isCreatingCategory}
+        />
+
+        {/* Edit Category Dialog */}
+        <EditCategoryDialog
+          isOpen={!!state.editingCategory}
+          onClose={() => actions.setEditingCategory(null)}
+          onUpdate={actions.handleUpdateCategory}
+          category={state.editingCategory}
+          isUpdating={state.isCreatingCategory}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteConfirmDialog
+          isOpen={!!state.deleteConfirm}
+          onClose={() => actions.setDeleteConfirm(null)}
+          onConfirm={actions.handleDelete}
+          item={state.deleteConfirm}
+          isDeleting={state.isCreatingWallet || state.isCreatingCategory}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 font-['Urbanist',sans-serif]">
       {/* Tab Switcher */}
-      <div className="flex p-1 bg-secondary rounded-2xl border border-border/50 self-center w-full max-w-[320px]">
+      <div className="flex p-1 bg-secondary rounded-xl border border-border/50 self-center w-full max-w-[320px]">
         <button
           onClick={() => actions.setActiveTab("wallets")}
           className={cn(
-            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            "flex-1 py-2.5 px-4 rounded-xl text-meta font-bold transition-all duration-300",
             state.activeTab === 'wallets' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -56,7 +121,7 @@ export function StatusHub({ state, actions }: StatusHubProps) {
         <button
           onClick={() => actions.setActiveTab("categories")}
           className={cn(
-            "flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300",
+            "flex-1 py-2.5 px-4 rounded-xl text-meta font-bold transition-all duration-300",
             state.activeTab === 'categories' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -71,8 +136,8 @@ export function StatusHub({ state, actions }: StatusHubProps) {
             <h3 className="text-sm font-bold text-foreground capitalize">
               {state.activeTab}
             </h3>
-            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-bold">
-              {state.itemCount}
+            <span className="text-meta-2xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full font-bold">
+              {state.activeTab === "wallets" ? state.walletItems.length : state.categoryItems.length}
             </span>
           </div>
           <button
@@ -110,7 +175,7 @@ export function StatusHub({ state, actions }: StatusHubProps) {
                 isLoading={state.isLoading}
                 onEdit={(id) => {
                   const cat = state.categoryItems.find(c => c.id === id);
-                  if (cat) actions.handleEditCategory(id, cat.title, cat.subtitle, cat.icon_name, cat.color);
+                  if (cat) actions.handleEditCategory(id, cat.title, cat.subtitle as "income" | "expense", cat.icon_name, cat.color);
                 }}
                 onDelete={(id) => {
                   const cat = state.categoryItems.find(c => c.id === id);
@@ -197,8 +262,9 @@ function AddWalletDialog({
       setWalletName("");
       setWalletType("bank");
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to create wallet");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Failed to create wallet");
     }
   };
 
@@ -211,16 +277,16 @@ function AddWalletDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Add New Wallet</h2>
+              <h2 className="text-heading font-extrabold text-foreground">Add New Wallet</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
@@ -237,7 +303,7 @@ function AddWalletDialog({
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Wallet Name
                 </label>
                 <input
@@ -245,13 +311,13 @@ function AddWalletDialog({
                   value={walletName}
                   onChange={(e) => setWalletName(e.target.value)}
                   placeholder="e.g., Bank BCA, Cash, GoPay"
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                   disabled={isCreating}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Wallet Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -262,7 +328,7 @@ function AddWalletDialog({
                       onClick={() => setWalletType(type)}
                       disabled={isCreating}
                       className={cn(
-                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
                         walletType === type
                           ? "bg-accent text-white border-accent shadow-sm"
                           : "bg-secondary text-muted-foreground border-border hover:text-foreground"
@@ -277,7 +343,7 @@ function AddWalletDialog({
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
               >
                 {isCreating ? (
                   <div className="flex items-center gap-2">
@@ -325,8 +391,9 @@ function AddCategoryDialog({
       setCategoryName("");
       setClassification("expense");
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to create category");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Failed to update category");
     }
   };
 
@@ -339,16 +406,16 @@ function AddCategoryDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Add New Category</h2>
+              <h2 className="text-heading font-extrabold text-foreground">Add New Category</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
@@ -365,7 +432,7 @@ function AddCategoryDialog({
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Category Name
                 </label>
                 <input
@@ -373,13 +440,13 @@ function AddCategoryDialog({
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
                   placeholder="e.g., Food, Salary, Transport"
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                   disabled={isCreating}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Classification
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -390,7 +457,7 @@ function AddCategoryDialog({
                       onClick={() => setClassification(type)}
                       disabled={isCreating}
                       className={cn(
-                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
                         classification === type
                           ? type === "income"
                             ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
@@ -407,7 +474,7 @@ function AddCategoryDialog({
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
               >
                 {isCreating ? (
                   <div className="flex items-center gap-2">
@@ -440,13 +507,13 @@ function EditWalletDialog({
   isUpdating: boolean;
 }) {
   const [walletName, setWalletName] = useState(wallet?.name || "");
-  const [walletType, setWalletType] = useState<"bank" | "cash" | "e-wallet">(wallet?.type as any || "bank");
+  const [walletType, setWalletType] = useState<"bank" | "cash" | "e-wallet">((wallet?.type as "bank" | "cash" | "e-wallet") || "bank");
   const [error, setError] = useState("");
 
   React.useEffect(() => {
     if (wallet) {
       setWalletName(wallet.name);
-      setWalletType(wallet.type as any);
+      setWalletType(wallet.type as "bank" | "cash" | "e-wallet");
     }
   }, [wallet]);
 
@@ -462,8 +529,9 @@ function EditWalletDialog({
     try {
       await onUpdate(walletName.trim(), walletType);
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to update wallet");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Failed to update wallet");
     }
   };
 
@@ -476,16 +544,16 @@ function EditWalletDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Edit Wallet</h2>
+              <h2 className="text-heading font-extrabold text-foreground">Edit Wallet</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
@@ -502,20 +570,20 @@ function EditWalletDialog({
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Wallet Name
                 </label>
                 <input
                   type="text"
                   value={walletName}
                   onChange={(e) => setWalletName(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                   disabled={isUpdating}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Wallet Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -526,7 +594,7 @@ function EditWalletDialog({
                       onClick={() => setWalletType(type)}
                       disabled={isUpdating}
                       className={cn(
-                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
                         walletType === type
                           ? "bg-accent text-white border-accent shadow-sm"
                           : "bg-secondary text-muted-foreground border-border hover:text-foreground"
@@ -541,7 +609,7 @@ function EditWalletDialog({
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
               >
                 {isUpdating ? (
                   <div className="flex items-center gap-2">
@@ -596,8 +664,9 @@ function EditCategoryDialog({
     try {
       await onUpdate(categoryName.trim(), classification);
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to update category");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Failed to update category");
     }
   };
 
@@ -610,16 +679,16 @@ function EditCategoryDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Edit Category</h2>
+              <h2 className="text-heading font-extrabold text-foreground">Edit Category</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
@@ -636,20 +705,20 @@ function EditCategoryDialog({
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Category Name
                 </label>
                 <input
                   type="text"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-sm font-medium"
+                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
                   disabled={isUpdating}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
+                <label className="block text-meta font-semibold text-foreground mb-1.5">
                   Classification
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -660,7 +729,7 @@ function EditCategoryDialog({
                       onClick={() => setClassification(type)}
                       disabled={isUpdating}
                       className={cn(
-                        "h-[44px] rounded-xl text-xs font-bold capitalize transition-all border",
+                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
                         classification === type
                           ? type === "income"
                             ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
@@ -677,7 +746,7 @@ function EditCategoryDialog({
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white font-bold text-sm flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
+                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
               >
                 {isUpdating ? (
                   <div className="flex items-center gap-2">
@@ -718,17 +787,17 @@ function DeleteConfirmDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
           >
             <div className="text-center mb-4">
-              <h2 className="text-lg font-bold text-foreground">Delete {item.type === "wallet" ? "Wallet" : "Category"}?</h2>
-              <p className="text-sm text-muted-foreground mt-2">
+              <h2 className="text-heading font-extrabold text-foreground">Delete {item.type === "wallet" ? "Wallet" : "Category"}?</h2>
+              <p className="text-body-sm font-medium text-muted-foreground mt-2">
                 Are you sure you want to delete &quot;{item.name}&quot;? This action cannot be undone.
               </p>
             </div>
