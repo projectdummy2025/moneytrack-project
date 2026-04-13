@@ -70,8 +70,9 @@ export function useAuthLogic() {
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
       actions.setSession(data.userId);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      const error = err as Error;
+      alert(error.message);
     } finally {
       setIsLoading(false);
     }
