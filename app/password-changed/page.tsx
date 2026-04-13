@@ -30,17 +30,17 @@ export default function PasswordChangedPage() {
         </div>
 
         {/* Text */}
-        <h1 className="text-[30px] font-bold text-[#1e232c] leading-tight mb-3 text-center">
+        <h1 className="text-heading-xl font-bold text-[#1e232c] leading-tight mb-3 text-center">
           Password Changed!
         </h1>
-        <p className="text-[16px] font-medium text-[#8391a1] leading-relaxed mb-10 text-center max-w-[280px]">
+        <p className="text-body-lg font-medium text-[#8391a1] leading-relaxed mb-10 text-center max-w-[280px]">
           Your password has been changed successfully.
         </p>
 
         {/* Back to Login Button */}
         <button
           onClick={() => router.push("/login")}
-          className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-[15px] text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
+          className="w-full h-[56px] bg-[#1e232c] rounded-xl flex items-center justify-center font-semibold text-body text-white hover:bg-[#2d3441] transition-all active:scale-95 shadow-lg shadow-black/10"
         >
           Back to Login
         </button>
