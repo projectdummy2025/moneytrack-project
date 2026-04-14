@@ -75,35 +75,32 @@ export function MonthlyOverview({ data, isLoading }: MonthlyOverviewProps) {
           </div>
         )}
 
-        {/* Category Legend - 2 Column Grid of Pills */}
-        <div className="grid grid-cols-2 gap-2 w-full mt-2">
-          {data.slice(0, data.length > 5 ? 4 : 5).map((item) => (
+        {/* Category Carousel - Horizontal Scroll of Cards */}
+        <div className="w-full mt-4 -mx-5 px-5 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-2">
+          {data.slice(0, 5).map((item) => (
             <div 
               key={item.name} 
-              className="flex items-center gap-2 px-3 py-2 rounded-full border border-border/50 bg-secondary/10 transition-transform active:scale-95 min-w-0"
+              className="flex-none w-[115px] h-[85px] snap-center flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border border-border/50 bg-secondary/20 transition-transform active:scale-95"
             >
-              <div className="shrink-0 size-2 rounded-full" style={{ background: item.color }} />
-              <div className="flex flex-col leading-none min-w-0">
-                <p className="text-meta-2xs font-bold text-foreground/80 mb-0.5 truncate uppercase tracking-tighter">
-                  {item.name}
-                </p>
-                <p className="text-meta-xs font-black" style={{ color: item.color }}>
-                  {formatCurrency(item.value)}
-                </p>
-              </div>
+              <div className="shrink-0 size-1.5 rounded-full" style={{ background: item.color }} />
+              <p className="text-meta-2xs font-extrabold text-muted-foreground uppercase tracking-tight truncate w-full text-center">
+                {item.name}
+              </p>
+              <p className="text-meta-xs font-black text-foreground" style={{ color: item.color }}>
+                {formatCurrency(item.value)}
+              </p>
             </div>
           ))}
           
-          {data.length > 5 && (
-            <Link 
-              href="/history/stats"
-              className="flex items-center justify-center px-3 py-2 rounded-full border border-dashed border-accent/40 bg-accent/5 hover:bg-accent/10 transition-colors"
-            >
-              <p className="text-meta-xs font-black text-accent uppercase tracking-wider">
-                +{data.length - 4} More
-              </p>
-            </Link>
-          )}
+          {/* Subtle indicator that more items might exist (optional link) */}
+          <Link 
+            href="/history/stats"
+            className="flex-none w-[100px] h-[85px] snap-center flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border border-dashed border-accent/30 bg-accent/5 hover:bg-accent/10 transition-colors"
+          >
+            <p className="text-meta-xs font-black text-accent uppercase tracking-wider text-center">
+              All Info
+            </p>
+          </Link>
         </div>
       </div>
     </div>
