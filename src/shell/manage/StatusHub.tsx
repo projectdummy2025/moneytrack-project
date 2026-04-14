@@ -5,6 +5,7 @@ import { Plus, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@core/utils/HelperTool";
 import { MasterRegistry } from "./MasterRegistry";
+import { ManagementItemDetail } from "./ManagementItemDetail";
 
 interface WalletItem {
   id: string;
@@ -36,6 +37,7 @@ interface StatusHubProps {
     editingWallet: { id: string; name: string; type: string } | null;
     editingCategory: { id: string; name: string; classification: "income" | "expense"; icon?: string; color?: string } | null;
     deleteConfirm: { type: "wallet" | "category"; id: string; name: string } | null;
+    selectedItem: { type: "wallet" | "category"; id: string } | null;
   };
   actions: {
     setActiveTab: (tab: "wallets" | "categories") => void;
@@ -52,6 +54,7 @@ interface StatusHubProps {
     setEditingCategory: (category: { id: string; name: string; classification: "income" | "expense"; icon?: string; color?: string } | null) => void;
     setDeleteConfirm: (confirm: { type: "wallet" | "category"; id: string; name: string } | null) => void;
     handleDelete: () => Promise<void>;
+    setSelectedItem: (item: { type: "wallet" | "category"; id: string } | null) => void;
   };
 }
 
@@ -93,7 +96,6 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
           isUpdating={state.isCreatingCategory}
         />
 
-        {/* Delete Confirmation Dialog */}
         <DeleteConfirmDialog
           isOpen={!!state.deleteConfirm}
           onClose={() => actions.setDeleteConfirm(null)}
@@ -101,6 +103,8 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
           item={state.deleteConfirm}
           isDeleting={state.isCreatingWallet || state.isCreatingCategory}
         />
+
+        {<DetailView state={state} actions={actions} />}
       </>
     );
   }
@@ -160,27 +164,13 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
               <MasterRegistry
                 items={state.walletItems}
                 isLoading={state.isLoading}
-                onEdit={(id) => {
-                  const wallet = state.walletItems.find(w => w.id === id);
-                  if (wallet) actions.handleEditWallet(id, wallet.title, wallet.subtitle);
-                }}
-                onDelete={(id) => {
-                  const wallet = state.walletItems.find(w => w.id === id);
-                  if (wallet) actions.setDeleteConfirm({ type: "wallet", id, name: wallet.title });
-                }}
+                onEdit={(id) => actions.setSelectedItem({ type: "wallet", id })}
               />
             ) : (
               <MasterRegistry
                 items={state.categoryItems}
                 isLoading={state.isLoading}
-                onEdit={(id) => {
-                  const cat = state.categoryItems.find(c => c.id === id);
-                  if (cat) actions.handleEditCategory(id, cat.title, cat.subtitle as "income" | "expense", cat.icon_name, cat.color);
-                }}
-                onDelete={(id) => {
-                  const cat = state.categoryItems.find(c => c.id === id);
-                  if (cat) actions.setDeleteConfirm({ type: "category", id, name: cat.title });
-                }}
+                onEdit={(id) => actions.setSelectedItem({ type: "category", id })}
               />
             )}
           </motion.div>
@@ -229,7 +219,39 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
         item={state.deleteConfirm}
         isDeleting={state.isCreatingWallet || state.isCreatingCategory}
       />
+
+      {/* Management Item Detail View */}
+      <DetailView state={state} actions={actions} />
     </div>
+  );
+}
+
+function DetailView({ state, actions }: { state: StatusHubProps['state'], actions: StatusHubProps['actions'] }) {
+  const item = state.selectedItem 
+    ? state.selectedItem.type === "wallet" 
+      ? { ...state.walletItems.find(w => w.id === state.selectedItem?.id)!, type: "wallet" as const }
+      : { ...state.categoryItems.find(c => c.id === state.selectedItem?.id)!, type: "category" as const }
+    : null;
+
+  return (
+    <ManagementItemDetail
+      isOpen={!!state.selectedItem}
+      onClose={() => actions.setSelectedItem(null)}
+      item={item}
+      onEdit={() => {
+        if (!item) return;
+        if (state.selectedItem?.type === "wallet") {
+          actions.handleEditWallet(item.id!, item.title, item.subtitle);
+        } else {
+          const cat = item as CategoryItem;
+          actions.handleEditCategory(item.id!, item.title, item.subtitle as "income" | "expense", cat.icon_name, item.color);
+        }
+      }}
+      onDelete={() => {
+        if (!item) return;
+        actions.setDeleteConfirm({ type: state.selectedItem!.type, id: item.id!, name: item.title });
+      }}
+    />
   );
 }
 
