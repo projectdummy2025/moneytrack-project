@@ -34,9 +34,9 @@ export function ManagementItemDetail({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="fixed inset-0 bg-background z-[100] flex flex-col font-['Urbanist',sans-serif]"
         >
