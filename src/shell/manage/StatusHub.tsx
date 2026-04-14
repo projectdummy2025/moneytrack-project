@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, X, Loader2, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@core/utils/HelperTool";
 import { MasterRegistry } from "./MasterRegistry";
@@ -293,56 +293,67 @@ function AddWalletDialog({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-heading font-extrabold text-foreground">Add New Wallet</h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 bg-background z-[150] flex flex-col font-['Urbanist',sans-serif]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border/50">
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-xl bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-90"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body font-bold text-foreground">Add New Wallet</h2>
+            <div className="w-10" />
+          </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
+            <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }} 
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold flex items-center gap-3"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   {error}
-                </div>
+                </motion.div>
               )}
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
-                  Wallet Name
+              <div className="space-y-4">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                  What should we call it?
                 </label>
-                <input
-                  type="text"
-                  value={walletName}
-                  onChange={(e) => setWalletName(e.target.value)}
-                  placeholder="e.g., Bank BCA, Cash, GoPay"
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
-                  disabled={isCreating}
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={walletName}
+                    onChange={(e) => setWalletName(e.target.value)}
+                    placeholder="e.g. My Savings, Daily Pocket"
+                    className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:text-muted-foreground/20 text-foreground"
+                    disabled={isCreating}
+                  />
+                  <div className="h-[2px] w-full bg-border rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: walletName ? "100%" : "0%" }}
+                      className="h-full bg-accent"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-6">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Wallet Type
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 gap-4">
                   {(["bank", "cash", "e-wallet"] as const).map((type) => (
                     <button
                       key={type}
@@ -350,35 +361,41 @@ function AddWalletDialog({
                       onClick={() => setWalletType(type)}
                       disabled={isCreating}
                       className={cn(
-                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
+                        "h-[76px] px-6 rounded-2xl text-body font-bold capitalize transition-all border flex items-center justify-between group",
                         walletType === type
-                          ? "bg-accent text-white border-accent shadow-sm"
-                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                          ? "bg-accent/10 border-accent text-accent shadow-sm"
+                          : "bg-secondary/50 text-muted-foreground border-border/50 hover:bg-secondary hover:text-foreground"
                       )}
                     >
-                      {type}
+                      <span>{type}</span>
+                      <div className={cn(
+                        "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                        walletType === type ? "border-accent bg-accent" : "border-border"
+                      )}>
+                        {walletType === type && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isCreating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
-              >
-                {isCreating ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Creating...</span>
-                  </div>
-                ) : (
-                  "Create Wallet"
-                )}
-              </button>
-            </form>
-          </motion.div>
-        </>
+            <button
+              type="submit"
+              disabled={isCreating}
+              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+            >
+              {isCreating ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Saving Wallet...</span>
+                </div>
+              ) : (
+                "Create Wallet"
+              )}
+            </button>
+          </form>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -422,56 +439,67 @@ function AddCategoryDialog({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-heading font-extrabold text-foreground">Add New Category</h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 bg-background z-[150] flex flex-col font-['Urbanist',sans-serif]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border/50">
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-xl bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-90"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body font-bold text-foreground">Add New Category</h2>
+            <div className="w-10" />
+          </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
+            <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }} 
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold flex items-center gap-3"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   {error}
-                </div>
+                </motion.div>
               )}
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-4">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Category Name
                 </label>
-                <input
-                  type="text"
-                  value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  placeholder="e.g., Food, Salary, Transport"
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
-                  disabled={isCreating}
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    placeholder="e.g. Food, Salary, Rent"
+                    className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:text-muted-foreground/20 text-foreground"
+                    disabled={isCreating}
+                  />
+                  <div className="h-[2px] w-full bg-border rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: categoryName ? "100%" : "0%" }}
+                      className="h-full bg-accent"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-6">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Classification
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   {(["expense", "income"] as const).map((type) => (
                     <button
                       key={type}
@@ -479,37 +507,45 @@ function AddCategoryDialog({
                       onClick={() => setClassification(type)}
                       disabled={isCreating}
                       className={cn(
-                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
+                        "h-[76px] px-6 rounded-2xl text-body font-bold capitalize transition-all border flex items-center justify-between group",
                         classification === type
                           ? type === "income"
-                            ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                            : "bg-orange-500 text-white border-orange-500 shadow-sm"
-                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-600"
+                            : "bg-orange-500/10 border-orange-500 text-orange-600"
+                          : "bg-secondary/50 text-muted-foreground border-border/50 hover:bg-secondary hover:text-foreground"
                       )}
                     >
-                      {type}
+                      <span>{type}</span>
+                      <div className={cn(
+                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                        classification === type 
+                          ? type === "income" ? "border-emerald-500 bg-emerald-500" : "border-orange-500 bg-orange-500"
+                          : "border-border"
+                      )}>
+                        {classification === type && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isCreating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
-              >
-                {isCreating ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Creating...</span>
-                  </div>
-                ) : (
-                  "Create Category"
-                )}
-              </button>
-            </form>
-          </motion.div>
-        </>
+            <button
+              type="submit"
+              disabled={isCreating}
+              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+            >
+              {isCreating ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Saving Category...</span>
+                </div>
+              ) : (
+                "Create Category"
+              )}
+            </button>
+          </form>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -560,55 +596,55 @@ function EditWalletDialog({
   return (
     <AnimatePresence>
       {isOpen && wallet && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-heading font-extrabold text-foreground">Edit Wallet</h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 bg-background z-[160] flex flex-col font-['Urbanist',sans-serif]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border/50">
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-xl bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-90"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body font-bold text-foreground">Edit Wallet</h2>
+            <div className="w-10" />
+          </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
+            <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold">
                   {error}
                 </div>
               )}
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-4">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Wallet Name
                 </label>
-                <input
-                  type="text"
-                  value={walletName}
-                  onChange={(e) => setWalletName(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
-                  disabled={isUpdating}
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={walletName}
+                    onChange={(e) => setWalletName(e.target.value)}
+                    className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 text-foreground"
+                    disabled={isUpdating}
+                  />
+                  <div className="h-[2px] w-full bg-border rounded-full" />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-6">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Wallet Type
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 gap-4">
                   {(["bank", "cash", "e-wallet"] as const).map((type) => (
                     <button
                       key={type}
@@ -616,35 +652,41 @@ function EditWalletDialog({
                       onClick={() => setWalletType(type)}
                       disabled={isUpdating}
                       className={cn(
-                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
+                        "h-[76px] px-6 rounded-2xl text-body font-bold capitalize transition-all border flex items-center justify-between group",
                         walletType === type
-                          ? "bg-accent text-white border-accent shadow-sm"
-                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                          ? "bg-accent/10 border-accent text-accent shadow-sm"
+                          : "bg-secondary/50 text-muted-foreground border-border/50 hover:bg-secondary hover:text-foreground"
                       )}
                     >
-                      {type}
+                      <span>{type}</span>
+                      <div className={cn(
+                        "w-6 h-6 rounded-full border-2 flex items-center justify-center",
+                        walletType === type ? "border-accent bg-accent" : "border-border"
+                      )}>
+                        {walletType === type && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
-              >
-                {isUpdating ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Updating...</span>
-                  </div>
-                ) : (
-                  "Update Wallet"
-                )}
-              </button>
-            </form>
-          </motion.div>
-        </>
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+            >
+              {isUpdating ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Updating...</span>
+                </div>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </form>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -695,55 +737,55 @@ function EditCategoryDialog({
   return (
     <AnimatePresence>
       {isOpen && category && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-heading font-extrabold text-foreground">Edit Category</h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 bg-background z-[160] flex flex-col font-['Urbanist',sans-serif]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border/50">
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-xl bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-90"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body font-bold text-foreground">Edit Category</h2>
+            <div className="w-10" />
+          </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
+            <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-sm font-medium">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold">
                   {error}
                 </div>
               )}
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-4">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Category Name
                 </label>
-                <input
-                  type="text"
-                  value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
-                  disabled={isUpdating}
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                    className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 text-foreground"
+                    disabled={isUpdating}
+                  />
+                  <div className="h-[2px] w-full bg-border rounded-full" />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">
+              <div className="space-y-6">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Classification
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   {(["expense", "income"] as const).map((type) => (
                     <button
                       key={type}
@@ -751,37 +793,45 @@ function EditCategoryDialog({
                       onClick={() => setClassification(type)}
                       disabled={isUpdating}
                       className={cn(
-                        "h-[44px] rounded-xl text-meta font-bold capitalize transition-all border",
+                        "h-[76px] px-6 rounded-2xl text-body font-bold capitalize transition-all border flex items-center justify-between group",
                         classification === type
                           ? type === "income"
-                            ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                            : "bg-orange-500 text-white border-orange-500 shadow-sm"
-                          : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-600"
+                            : "bg-orange-500/10 border-orange-500 text-orange-600"
+                          : "bg-secondary/50 text-muted-foreground border-border/50 hover:bg-secondary hover:text-foreground"
                       )}
                     >
-                      {type}
+                      <span>{type}</span>
+                      <div className={cn(
+                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                        classification === type 
+                          ? type === "income" ? "border-emerald-500 bg-emerald-500" : "border-orange-500 bg-orange-500"
+                          : "border-border"
+                      )}>
+                        {classification === type && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all mt-2 active:scale-95 disabled:opacity-50"
-              >
-                {isUpdating ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Updating...</span>
-                  </div>
-                ) : (
-                  "Update Category"
-                )}
-              </button>
-            </form>
-          </motion.div>
-        </>
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+            >
+              {isUpdating ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Updating...</span>
+                </div>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </form>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -803,52 +853,62 @@ function DeleteConfirmDialog({
   return (
     <AnimatePresence>
       {isOpen && item && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-[#0f1717]/80 backdrop-blur-[2px] z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-card rounded-2xl border border-border shadow-2xl z-50 p-6"
-          >
-            <div className="text-center mb-4">
-              <h2 className="text-heading font-extrabold text-foreground">Delete {item.type === "wallet" ? "Wallet" : "Category"}?</h2>
-              <p className="text-body-sm font-medium text-muted-foreground mt-2">
-                Are you sure you want to delete &quot;{item.name}&quot;? This action cannot be undone.
-              </p>
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 bg-background z-[200] flex flex-col font-['Urbanist',sans-serif]"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border/50">
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-xl bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-all active:scale-90"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body font-bold text-foreground">Confirm Deletion</h2>
+            <div className="w-10" />
+          </div>
+
+          <div className="flex-1 flex flex-col p-6 max-w-lg mx-auto w-full items-center justify-center text-center">
+            <div className="w-24 h-24 rounded-[32px] bg-rose-500/10 text-rose-500 flex items-center justify-center mb-8 border border-rose-500/20">
+              <Trash2 className="w-10 h-10" />
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={onClose}
-                disabled={isDeleting}
-                className="flex-1 h-[48px] rounded-xl bg-secondary text-foreground font-bold text-sm flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
-              >
-                Cancel
-              </button>
+            <h1 className="text-3xl font-black text-foreground tracking-tight mb-4">
+              Delete {item.type === "wallet" ? "Wallet" : "Category"}?
+            </h1>
+            <p className="text-lg font-bold text-muted-foreground/60 leading-relaxed max-w-xs">
+              Are you sure you want to permanently delete <span className="text-foreground">&quot;{item.name}&quot;</span>? This action cannot be undone.
+            </p>
+
+            <div className="w-full flex flex-col gap-4 mt-12">
               <button
                 onClick={onConfirm}
                 disabled={isDeleting}
-                className="flex-1 h-[48px] rounded-xl bg-rose-500 text-white font-bold text-sm flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+                className="w-full h-16 rounded-2xl bg-rose-500 text-white font-black text-body flex items-center justify-center transition-all shadow-xl shadow-rose-500/20 active:scale-95 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
+                    <Loader2 className="animate-spin" size={20} />
                     <span>Deleting...</span>
                   </div>
                 ) : (
-                  "Delete"
+                  `Delete ${item.type === "wallet" ? "Wallet" : "Category"}`
                 )}
               </button>
+              <button
+                onClick={onClose}
+                disabled={isDeleting}
+                className="w-full h-16 rounded-2xl bg-secondary text-foreground font-black text-body flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+              >
+                Go Back
+              </button>
             </div>
-          </motion.div>
-        </>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
