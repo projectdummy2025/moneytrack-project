@@ -68,7 +68,8 @@ function ManagementItem({ title, subtitle, value, icon: Icon, colorClass, delay 
       animate={{ opacity: 1 }}
       transition={{ delay }}
       whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group relative"
+      onClick={() => onEdit?.()}
+      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group relative hover:bg-secondary/30"
     >
       <div className={cn(
         "w-11 h-11 rounded-2xl flex items-center justify-center transition-all border border-border/50",
@@ -86,38 +87,16 @@ function ManagementItem({ title, subtitle, value, icon: Icon, colorClass, delay 
         <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">{subtitle}</p>
       </div>
 
-      {value !== undefined && (
-        <div className="text-right">
-          <p className="text-body-sm font-bold tracking-tight text-foreground">
-            {typeof value === 'number' ? formatCurrency(value) : value}
-          </p>
-        </div>
-      )}
-
-      {/* Action overlay: Absolute positioning keeps the content flow symmetric */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all bg-card/80 backdrop-blur-sm pl-4 pr-1 py-1 rounded-xl">
-        {onEdit && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-primary flex items-center justify-center transition-all"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-          </button>
+      <div className="flex items-center gap-3">
+        {value !== undefined && (
+          <div className="text-right">
+            <p className="text-body-sm font-bold tracking-tight text-foreground">
+              {typeof value === 'number' ? formatCurrency(value) : value}
+            </p>
+          </div>
         )}
-        {onDelete && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-rose-500 flex items-center justify-center transition-all"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        )}
-        <ChevronRight className="w-4 h-4 text-muted-foreground/30 ml-1" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
       </div>
-
-      {/* Fixed Chevron placeholder when not hovered to maintain some visual hint if desired, 
-          but for maximum balance we keep it hidden or absolute as above. 
-          Here I've moved the original chevron into the absolute group. */}
     </motion.div>
   );
 }
