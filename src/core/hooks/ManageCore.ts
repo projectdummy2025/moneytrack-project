@@ -12,6 +12,7 @@ export function useManageCore() {
   const [editingWallet, setEditingWallet] = useState<{ id: string; name: string; type: string } | null>(null);
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; classification: "income" | "expense"; icon?: string; color?: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "wallet" | "category"; id: string; name: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{ type: "wallet" | "category"; id: string } | null>(null);
   const { wallets, isLoading: isLoadingWallets, createWallet, isCreating: isCreatingWallet, updateWallet, deleteWallet } = useWallets();
   const { categories, isLoading: isLoadingCategories, createCategory, isCreating: isCreatingCategory, updateCategory, deleteCategory } = useCategories();
 
@@ -92,6 +93,7 @@ export function useManageCore() {
       editingWallet,
       editingCategory,
       deleteConfirm,
+      selectedItem,
     },
     actions: {
       setActiveTab,
@@ -108,6 +110,7 @@ export function useManageCore() {
       setEditingCategory,
       setDeleteConfirm,
       handleDelete,
+      setSelectedItem,
     }
   };
 }
