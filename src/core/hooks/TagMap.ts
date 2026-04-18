@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Category } from "@core/types/DataCore";
+import Cookies from "js-cookie";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -12,6 +13,12 @@ export function useCategories() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchCategories = useCallback(async () => {
+    const session = Cookies.get("moneytrack_session");
+    if (!session) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("/api/categories");

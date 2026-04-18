@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Transaction } from "@core/types/DataCore";
+import Cookies from "js-cookie";
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -9,6 +10,12 @@ export function useTransactions() {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchTransactions = async () => {
+    const session = Cookies.get("moneytrack_session");
+    if (!session) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch("/api/transactions");

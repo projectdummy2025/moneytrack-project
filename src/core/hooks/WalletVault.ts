@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Wallet } from "@core/types/DataCore";
+import Cookies from "js-cookie";
 
 export function useWallets() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -12,6 +13,12 @@ export function useWallets() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchWallets = useCallback(async () => {
+    const session = Cookies.get("moneytrack_session");
+    if (!session) {
+      setIsLoading(false);
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const response = await fetch("/api/wallets");

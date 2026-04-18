@@ -10,6 +10,11 @@ export function useProfile() {
 
   useEffect(() => {
     async function fetchProfile() {
+      const session = Cookies.get("moneytrack_session");
+      if (!session) {
+        setIsLoading(false);
+        return;
+      }
       try {
         const res = await fetch("/api/auth/me");
         if (res.ok) {
