@@ -16,23 +16,21 @@ export default function CategoriesPage() {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-4 justify-between"
+        className="relative flex items-center justify-between"
       >
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/"
-            className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground active:scale-95 transition-all shadow-sm"
-          >
-            <X className="size-5" />
-          </Link>
-          <div className="flex flex-col">
-            <h1 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">Categories</h1>
-            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.18em]">Organize your spending</p>
-          </div>
+        <Link 
+          href="/"
+          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground active:scale-95 transition-all shadow-sm z-10"
+        >
+          <X className="size-5" />
+        </Link>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+          <h1 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">Categories</h1>
+          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.18em]">Organize your spending</p>
         </div>
         <button
           onClick={() => brain.actions.setIsAddCategoryOpen(true)}
-          className="w-10 h-10 rounded-xl bg-[#35C2C1] text-white shadow-sm flex items-center justify-center active:scale-95 transition-all"
+          className="relative z-10 w-10 h-10 rounded-xl bg-[#35C2C1] text-white shadow-sm flex items-center justify-center active:scale-95 transition-all"
         >
           <Plus className="size-5 stroke-[2.5px]" />
         </button>
