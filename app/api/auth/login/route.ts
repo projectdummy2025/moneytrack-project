@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
 import { users } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { comparePassword } from "@/src/core/utils/AuthCrypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,24 +16,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    // Simple matching (plain text for trial)
+    // Find user by email
     const [user] = await db
       .select()
       .from(users)
-      .where(and(eq(users.email, email), eq(users.password, password)))
+      .where(eq(users.email, email))
       .limit(1);
 
-    if (!user) {
+    if (!user || !user.password) {
+      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+
+    // Compare hashed password
+    const isPasswordValid = await comparePassword(password, user.password);
+
+    if (!isPasswordValid) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
     const response = NextResponse.json({ userId: user.id }, { status: 200 });
 
-    // Konfigurasi cookie profesional untuk cross-device HTTP dan Production
+    // Set Session Cookie
     response.cookies.set("moneytrack_session", user.id, {
       httpOnly: false,
       path: "/",
-      secure: request.headers.get("x-forwarded-proto") === "https" || request.nextUrl.protocol === "https:",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7,
       sameSite: "lax",
     });

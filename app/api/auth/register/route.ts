@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/lib/db";
-import { users, categories, wallets } from "@/db/schema";
+import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
-const DEFAULT_CATEGORIES = [
-  // Expense categories
-  { categoryName: "Makanan", classification: "expense" as const, icon: "utensils", color: "#ef4444" },
-  { categoryName: "Transportasi", classification: "expense" as const, icon: "car", color: "#3b82f6" },
-  { categoryName: "Belanja", classification: "expense" as const, icon: "shopping-bag", color: "#8b5cf6" },
-  { categoryName: "Tagihan", classification: "expense" as const, icon: "receipt", color: "#f59e0b" },
-  { categoryName: "Hiburan", classification: "expense" as const, icon: "gamepad-2", color: "#ec4899" },
-  { categoryName: "Kesehatan", classification: "expense" as const, icon: "heart-pulse", color: "#10b981" },
-  // Income categories
-  { categoryName: "Gaji", classification: "income" as const, icon: "banknote", color: "#22c55e" },
-  { categoryName: "Bonus", classification: "income" as const, icon: "gift", color: "#06b6d4" },
-  { categoryName: "Investasi", classification: "income" as const, icon: "trending-up", color: "#84cc16" },
-];
+import { hashPassword, generateOTP, createRegistrationToken } from "@/src/core/utils/AuthCrypto";
+import { sendOTPEmail } from "@/src/core/utils/Mailer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,39 +19,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email already registered" }, { status: 400 });
     }
 
-    // Create user
-    const [newUser] = await db.insert(users).values({
+    // 1. Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // 2. Generate OTP
+    const otp = generateOTP();
+
+    // 3. Send OTP via Email
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (mailError) {
+      console.error("Failed to send OTP email:", mailError);
+      return NextResponse.json({ error: "Failed to send verification email" }, { status: 500 });
+    }
+
+    // 4. Create Encrypted Registration Token (Stateless)
+    const token = await createRegistrationToken({
       email,
-      password,
+      hashedPassword,
       name,
-    }).returning();
+      otp,
+    });
 
-    // Create default wallet
-    const [defaultWallet] = await db.insert(wallets).values({
-      userId: newUser.id,
-      walletName: "Cash",
-      walletType: "cash",
-      balance: "0",
-      currencyCode: "IDR",
-    }).returning();
+    const response = NextResponse.json({ message: "OTP sent successfully" }, { status: 200 });
 
-    // Create default categories
-    await db.insert(categories).values(
-      DEFAULT_CATEGORIES.map(cat => ({
-        ...cat,
-        userId: newUser.id,
-      }))
-    );
-
-    const response = NextResponse.json({ userId: newUser.id, walletId: defaultWallet.id }, { status: 201 });
-
-    // Konfigurasi cookie profesional untuk cross-device HTTP dan Production
-    response.cookies.set("moneytrack_session", newUser.id, {
-      httpOnly: false,
+    // 5. Set Secure Registration Cookie (10 minutes expiry)
+    response.cookies.set("registration_pending", token, {
+      httpOnly: true,
       path: "/",
-      secure: request.headers.get("x-forwarded-proto") === "https" || request.nextUrl.protocol === "https:",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 10, // 10 minutes
     });
 
     return response;
