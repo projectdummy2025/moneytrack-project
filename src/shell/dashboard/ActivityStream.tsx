@@ -78,9 +78,9 @@ export function ActivityStream({ transactions, isLoading }: RecentActivitiesProp
 
               <p className={cn(
                 "text-heading-sm font-bold tracking-tight",
-                transaction.classification === 'income' ? 'text-[#35C2C1]' : 'text-[#ef4444]'
+                transaction.classification === 'income' ? 'text-[#35C2C1]' : 'text-rose-600'
               )}>
-                {transaction.classification === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
+                {formatCurrency(transaction.amount)}
               </p>
             </motion.div>
           ))

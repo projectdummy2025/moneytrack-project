@@ -177,7 +177,7 @@ export function TraceLine({ state, actions }: TraceLineProps) {
             "text-display-md font-black tracking-tight",
             state.totals.monthNet >= 0 ? "text-emerald-600" : "text-rose-600"
           )}>
-            {state.totals.monthNet >= 0 ? '+' : ''} {formatCurrency(state.totals.monthNet)}
+            {formatCurrency(state.totals.monthNet)}
           </p>
         </div>
         <div className="bg-card p-5 rounded-2xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
@@ -290,9 +290,9 @@ function HistoryItem({
       <div className="text-right">
         <p className={cn(
           "text-body-sm font-bold tracking-tight",
-          item.classification === 'income' ? 'text-emerald-600' : 'text-foreground'
+          item.classification === 'income' ? 'text-emerald-600' : 'text-rose-600'
         )}>
-          {item.classification === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
+          {formatCurrency(item.amount)}
         </p>
       </div>
 
