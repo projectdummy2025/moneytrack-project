@@ -20,9 +20,9 @@ export default function SpendingStatsPage() {
       >
         <Link 
           href="/history"
-          className="w-12 h-12 rounded-2xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary/10 transition-all shadow-sm active:scale-90"
+          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary/10 transition-all shadow-sm active:scale-90"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="size-5" />
         </Link>
         <div className="flex flex-col">
           <h1 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">Spending Analysis</h1>

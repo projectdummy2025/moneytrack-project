@@ -134,7 +134,7 @@ export function SpendingDetail({ state, actions }: SpendingDetailProps) {
       </motion.div>
 
       {/* Chart Section */}
-      <motion.div variants={itemVars} className="bg-card rounded-[40px] p-8 border border-border shadow-xl shadow-foreground/5 relative overflow-hidden">
+      <motion.div variants={itemVars} className="flex flex-col relative w-full pt-2 pb-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex flex-col">
             <h3 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">Expense Distribution</h3>
