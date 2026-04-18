@@ -247,8 +247,8 @@ export function SpendingDetail({ state, actions }: SpendingDetailProps) {
             <motion.div
               key={cat.name}
               variants={itemVars}
-              whileHover={{ x: 4 }}
-              className="bg-card rounded-2xl p-5 border border-border shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer relative"
+              whileTap={{ scale: 0.98, backgroundColor: "rgba(0,0,0,0.03)" }}
+              className="bg-card rounded-2xl p-5 border border-border shadow-sm flex items-center justify-between group transition-all relative"
             >
               <div className="flex flex-col">
                 <p className="text-body font-bold tracking-tight text-foreground leading-tight mb-0.5">{cat.name}</p>

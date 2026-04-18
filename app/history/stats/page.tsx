@@ -3,7 +3,7 @@
 import React from "react";
 import { SpendingDetail } from "@shell/history/SpendingDetail";
 import { useAnalyticsCore } from "@core/hooks/AnalyticsCore";
-import { ArrowLeft } from "lucide-react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -20,9 +20,9 @@ export default function SpendingStatsPage() {
       >
         <Link 
           href="/history"
-          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary/10 transition-all shadow-sm active:scale-90"
+          className="size-10 rounded-xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-secondary/10 transition-all shadow-sm active:scale-95"
         >
-          <ArrowLeft className="size-5" />
+          <X className="size-5" />
         </Link>
         <div className="flex flex-col">
           <h1 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">Spending Analysis</h1>
