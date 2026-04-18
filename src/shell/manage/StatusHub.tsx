@@ -11,16 +11,16 @@ interface WalletItem {
   id: string;
   title: string;
   subtitle: string;
-  icon?: string;
-  color?: string;
+  icon?: any;
+  color?: string | null;
 }
 
 interface CategoryItem {
   id: string;
   title: string;
   subtitle: string;
-  icon_name?: string;
-  color?: string;
+  icon_name?: string | null;
+  color?: string | null;
 }
 
 interface StatusHubProps {
@@ -146,9 +146,9 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
           </div>
           <button
             onClick={actions.handleAddClick}
-            className="w-10 h-10 rounded-xl bg-accent text-white shadow-md shadow-accent/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+            className="w-10 h-10 rounded-xl bg-accent text-white shadow-sm flex items-center justify-center active:scale-95 transition-all"
           >
-            <Plus className="w-5 h-5 stroke-[3px]" />
+            <Plus className="w-5 h-5 stroke-[2.5px]" />
           </button>
         </div>
 
@@ -162,13 +162,13 @@ export function StatusHub({ state, actions, hideHeader = false }: StatusHubProps
           >
             {state.activeTab === "wallets" ? (
               <MasterRegistry
-                items={state.walletItems}
+                items={state.walletItems as any}
                 isLoading={state.isLoading}
                 onEdit={(id) => actions.setSelectedItem({ type: "wallet", id })}
               />
             ) : (
               <MasterRegistry
-                items={state.categoryItems}
+                items={state.categoryItems as any}
                 isLoading={state.isLoading}
                 onEdit={(id) => actions.setSelectedItem({ type: "category", id })}
               />
@@ -237,14 +237,14 @@ function DetailView({ state, actions }: { state: StatusHubProps['state'], action
     <ManagementItemDetail
       isOpen={!!state.selectedItem}
       onClose={() => actions.setSelectedItem(null)}
-      item={item}
+      item={item as any}
       onEdit={() => {
         if (!item) return;
         if (state.selectedItem?.type === "wallet") {
           actions.handleEditWallet(item.id!, item.title, item.subtitle);
         } else {
           const cat = item as CategoryItem;
-          actions.handleEditCategory(item.id!, item.title, item.subtitle as "income" | "expense", cat.icon_name, item.color);
+          actions.handleEditCategory(item.id!, item.title, item.subtitle as "income" | "expense", cat.icon_name || undefined, cat.color || undefined);
         }
       }}
       onDelete={() => {

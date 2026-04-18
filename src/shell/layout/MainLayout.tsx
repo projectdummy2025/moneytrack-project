@@ -26,7 +26,7 @@ export function MainLayout({ children }: AppLayoutProps) {
   });
 
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password";
-  const isDetailPage = pathname.includes("/history/stats") || pathname.includes("/categories/") || pathname.includes("/wallets/");
+  const isDetailPage = pathname.includes("/history/stats") || pathname.includes("/categories") || pathname.includes("/wallets/");
 
   const [greeting, setGreeting] = React.useState("Welcome");
 
