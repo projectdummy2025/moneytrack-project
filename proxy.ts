@@ -15,19 +15,21 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. ABAIKAN halaman login & register
-  if (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password") {
-    // Jika sudah ada session tapi mau ke login, lempar ke dashboard
-    if (session && pathname !== "/forgot-password") {
+  // 2. ABAIKAN halaman publik (Auth)
+  const publicPaths = ["/login", "/register", "/otp-verification", "/forgot-password", "/create-new-password", "/password-changed"];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  if (isPublicPath) {
+    // Jika sudah ada session tapi mau ke login/register/otp, lempar ke dashboard
+    if (session && (pathname === "/login" || pathname === "/register" || pathname === "/otp-verification")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next();
   }
 
-  // 3. PROTEKSI Dashboard & Halaman lainnya
+  // 3. PROTEKSI Dashboard & Halaman internal lainnya
   if (!session) {
     const loginUrl = new URL("/login", request.url);
-    // Jangan redirect jika request berasal dari fetch/client-side
     return NextResponse.redirect(loginUrl);
   }
 

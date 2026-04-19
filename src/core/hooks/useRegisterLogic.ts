@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 
 export function useRegisterLogic() {
   const router = useRouter();
@@ -33,8 +32,8 @@ export function useRegisterLogic() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      Cookies.set("moneytrack_session", data.userId, { expires: 7, path: '/' });
-      router.push("/");
+      // Redirect to OTP Verification
+      router.push("/otp-verification");
     } catch (err) {
       throw err;
     } finally {

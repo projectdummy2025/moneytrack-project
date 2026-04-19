@@ -55,9 +55,9 @@ export function NavSider() {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => brain.actions.setIsDrawerOpen(true)}
-            className="bg-[#35C2C1] flex items-center justify-center rounded-full shrink-0 size-[51px] cursor-pointer shadow-[0_4px_20px_rgba(53,194,193,0.4)]"
+            className="bg-[#35C2C1] flex items-center justify-center rounded-full shrink-0 size-11 cursor-pointer shadow-[0_4px_15px_rgba(53,194,193,0.35)]"
           >
-            <Plus className="size-[25.5px] text-white" />
+            <Plus className="size-5 text-white stroke-[2.5px]" />
           </motion.button>
         </div>
 

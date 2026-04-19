@@ -12,7 +12,7 @@ export function formatCurrency(amount: number | string) {
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(numericAmount);
+  }).format(Math.abs(numericAmount));
 }
 
 export function formatCompactNumber(number: number | string) {

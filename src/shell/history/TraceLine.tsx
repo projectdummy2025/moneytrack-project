@@ -177,7 +177,7 @@ export function TraceLine({ state, actions }: TraceLineProps) {
             "text-display-md font-black tracking-tight",
             state.totals.monthNet >= 0 ? "text-emerald-600" : "text-rose-600"
           )}>
-            {state.totals.monthNet >= 0 ? '+' : ''} {formatCurrency(state.totals.monthNet)}
+            {formatCurrency(state.totals.monthNet)}
           </p>
         </div>
         <div className="bg-card p-5 rounded-2xl border border-border shadow-sm shadow-black/5 flex flex-col gap-1">
@@ -233,6 +233,12 @@ export function TraceLine({ state, actions }: TraceLineProps) {
         onClose={() => actions.setEditingTransaction(null)}
         onUpdate={actions.handleUpdate}
         transaction={state.editingTransaction}
+        onDeleteRequest={() => {
+          if (state.editingTransaction) {
+            actions.setEditingTransaction(null);
+            actions.setDeleteConfirm({ id: state.editingTransaction.id, memo: state.editingTransaction.memo || "Transaction" });
+          }
+        }}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -262,8 +268,9 @@ function HistoryItem({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay }}
-      whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-      className="flex items-center gap-4 p-4 cursor-pointer transition-colors group relative"
+      whileTap={{ scale: 0.98, backgroundColor: "rgba(0,0,0,0.03)" }}
+      onClick={onEdit}
+      className="flex items-center gap-4 p-4 cursor-pointer transition-colors relative"
     >
       <div className={cn(
         "w-10 h-10 rounded-2xl flex items-center justify-center transition-all",
@@ -290,27 +297,12 @@ function HistoryItem({
       <div className="text-right">
         <p className={cn(
           "text-body-sm font-bold tracking-tight",
-          item.classification === 'income' ? 'text-emerald-600' : 'text-foreground'
+          item.classification === 'income' ? 'text-emerald-600' : 'text-rose-600'
         )}>
-          {item.classification === 'income' ? '+' : '-'} {formatCurrency(item.amount)}
+          {formatCurrency(item.amount)}
         </p>
       </div>
 
-      {/* Absolute positioning ensures the buttons don't push the amount to the left, keeping margins balanced */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all bg-card/60 backdrop-blur-sm pl-4 pr-1 py-1 rounded-xl">
-        <button
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-primary flex items-center justify-center transition-all"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-rose-500 flex items-center justify-center transition-all"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
     </motion.div>
   );
 }
@@ -320,11 +312,13 @@ function EditTransactionDialog({
   onClose,
   onUpdate,
   transaction,
+  onDeleteRequest,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (data: { amount: string; memo: string; walletId?: string; categoryId?: string; transactedAt?: string }) => Promise<void>;
   transaction: { id: string; amount: string; memo: string; walletId: string; categoryId: string; transactedAt: string } | null;
+  onDeleteRequest: () => void;
 }) {
   const [amount, setAmount] = useState(transaction?.amount || "");
   const [memo, setMemo] = useState(transaction?.memo || "");
@@ -354,66 +348,76 @@ function EditTransactionDialog({
   return (
     <AnimatePresence>
       {isOpen && transaction && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl shadow-xl z-50 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-heading font-extrabold text-foreground">Edit Transaction</h2>
-              <button onClick={onClose} className="w-8 h-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="fixed inset-0 w-full h-full bg-background z-50 flex flex-col"
+        >
+          <div className="flex items-center justify-between p-6">
+            <button 
+              type="button"
+              onClick={onClose} 
+              className="w-10 h-10 rounded-2xl bg-secondary text-foreground hover:bg-secondary/80 active:scale-95 flex items-center justify-center transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-body-lg font-extrabold text-foreground tracking-tight">Edit Transaction</h2>
+            <div className="w-10 h-10" />
+          </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">Amount</label>
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between px-6 pb-6">
+            <div className="flex flex-col gap-8 mt-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase tracking-widest">Amount</label>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
+                  placeholder="0"
+                  className="w-full pb-2 text-heading-lg font-bold bg-transparent border-b border-border outline-none focus:border-accent transition-all placeholder:text-muted-foreground/30 rounded-none"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-meta font-semibold text-foreground mb-1.5">Note</label>
+              <div className="flex flex-col gap-2">
+                <label className="text-meta-xs font-bold text-muted-foreground uppercase tracking-widest">Note</label>
                 <input
                   type="text"
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
-                  className="w-full h-[48px] bg-secondary border border-border rounded-xl px-4 outline-none focus:border-accent transition-colors text-body-sm font-medium"
+                  placeholder="e.g. Lunch"
+                  className="w-full pb-2 text-body-lg font-bold bg-transparent border-b border-border outline-none focus:border-accent transition-all placeholder:text-muted-foreground/30 rounded-none"
                 />
               </div>
 
               <button
-                type="submit"
-                disabled={isSubmitting || !amount}
-                className="w-full h-[48px] rounded-xl bg-foreground text-white text-body-sm font-bold flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+                type="button"
+                onClick={onDeleteRequest}
+                className="flex items-center gap-2 self-start mt-4 px-4 py-3 rounded-2xl bg-rose-500/10 text-rose-500 font-bold text-body-sm active:scale-95 transition-transform"
               >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Updating...</span>
-                  </div>
-                ) : (
-                  "Update Transaction"
-                )}
+                <Trash2 className="w-4 h-4" />
+                <span>Delete This Record</span>
               </button>
-            </form>
-          </motion.div>
-        </>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !amount}
+              className="w-full h-[56px] rounded-2xl bg-foreground text-background text-body font-extrabold flex items-center justify-center transition-all active:scale-[0.98] disabled:opacity-50 mt-auto safe-bottom"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Updating...</span>
+                </div>
+              ) : (
+                "Update Transaction"
+              )}
+            </button>
+          </form>
+        </motion.div>
       )}
     </AnimatePresence>
   );

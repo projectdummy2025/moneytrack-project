@@ -18,9 +18,9 @@ export default function WalletsPage() {
         </div>
         <button
           onClick={() => brain.actions.setIsAddWalletOpen(true)}
-          className="w-12 h-12 rounded-2xl bg-[#35C2C1] text-white shadow-lg shadow-[#35C2C1]/20 flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+          className="w-10 h-10 rounded-xl bg-[#35C2C1] text-white shadow-sm flex items-center justify-center active:scale-95 transition-all"
         >
-          <Plus className="w-6 h-6 stroke-[3px]" />
+          <Plus className="size-5 stroke-[2.5px]" />
         </button>
       </div>
 
