@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useMemo } from "react";
 import { useWallets } from "../hooks/WalletVault";
 import { useTransactions } from "../hooks/FlowMaster";
 import { Wallet, Transaction } from "../types/DataCore";
+import type { RecordType } from "../hooks/RecordCore";
 
 interface DashContextType {
   state: {
@@ -12,6 +13,8 @@ interface DashContextType {
     isLoading: boolean;
     isDrawerOpen: boolean;
     isTransferOpen: boolean;
+    // Which transaction type the drawer should open with (expense / income / swap)
+    drawerInitialType: RecordType;
     totals: {
       totalBalance: number;
       totalIncome: number;
@@ -23,6 +26,8 @@ interface DashContextType {
   actions: {
     setIsDrawerOpen: (open: boolean) => void;
     setIsTransferOpen: (open: boolean) => void;
+    // Convenience: opens the drawer pre-set to the "swap" (transfer) tab
+    openTransferDrawer: () => void;
     handleTransactionSuccess: () => void;
   };
 }
@@ -34,6 +39,14 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
   const { transactions, isLoading: isLoadingTransactions, mutate: mutateTransactions } = useTransactions();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  // Tracks which tab the drawer should open with; reset to "expense" on normal open
+  const [drawerInitialType, setDrawerInitialType] = useState<RecordType>("expense");
+
+  // Opens the quick-record drawer with the "swap" tab pre-selected
+  const openTransferDrawer = () => {
+    setDrawerInitialType("swap");
+    setIsDrawerOpen(true);
+  };
 
   const stats = useMemo(() => {
     let totalBalance = 0;
@@ -98,6 +111,7 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
       isLoading: isLoadingWallets || isLoadingTransactions,
       isDrawerOpen,
       isTransferOpen,
+      drawerInitialType,
       totals: {
         totalBalance: stats.totalBalance,
         totalIncome: stats.totalIncome,
@@ -109,6 +123,7 @@ export function DashProvider({ children }: { children: React.ReactNode }) {
     actions: {
       setIsDrawerOpen,
       setIsTransferOpen,
+      openTransferDrawer,
       handleTransactionSuccess,
     }
   };

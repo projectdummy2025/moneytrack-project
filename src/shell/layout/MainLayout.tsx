@@ -23,10 +23,13 @@ export function MainLayout({ children }: AppLayoutProps) {
     isOpen: brain.state.isDrawerOpen,
     onClose: () => brain.actions.setIsDrawerOpen(false),
     onSuccess: brain.actions.handleTransactionSuccess,
+    // Passed from DashProvider — lets Wallets page open drawer on the "swap" tab
+    initialType: brain.state.drawerInitialType,
   });
 
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password";
-  const isDetailPage = pathname.includes("/history/stats") || pathname.includes("/categories") || pathname.includes("/wallets/");
+  // Detail pages hide the bottom nav bar (they have their own back button)
+  const isDetailPage = pathname.includes("/categories") || pathname.startsWith("/wallets/");
 
   const [greeting, setGreeting] = React.useState("Welcome");
 

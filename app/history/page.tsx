@@ -1,16 +1,7 @@
-"use client";
-
-import React from "react";
-import { TraceLine } from "@shell/history/TraceLine";
-import { useHistoryCore } from "@core/hooks/HistoryCore";
+// History has merged into the Reports page.
+// This redirect ensures old links / bookmarks still work.
+import { redirect } from "next/navigation";
 
 export default function HistoryPage() {
-  const brain = useHistoryCore();
-
-  return (
-    <TraceLine
-      state={brain.state}
-      actions={brain.actions}
-    />
-  );
+  redirect("/reports");
 }

@@ -8,11 +8,13 @@ interface RecordCoreProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  // When provided, the drawer opens on this tab instead of the default "expense"
+  initialType?: RecordType;
 }
 
 export type RecordType = "expense" | "income" | "swap";
 
-export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
+export function useRecordCore({ isOpen, onClose, onSuccess, initialType }: RecordCoreProps) {
   const { wallets } = useWallets();
   const { categories } = useCategories();
 
@@ -51,16 +53,20 @@ export function useRecordCore({ isOpen, onClose, onSuccess }: RecordCoreProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // If a specific type was requested (e.g. "swap" from Wallets page), apply it now
+      if (initialType) setType(initialType);
     } else {
       document.body.style.overflow = "unset";
       setAmount("");
       setMemo("");
       setError("");
+      // Reset to default so the next normal open always starts on "expense"
+      setType("expense");
     }
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async () => {
     setError("");
