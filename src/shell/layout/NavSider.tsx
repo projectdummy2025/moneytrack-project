@@ -3,12 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Home, 
-  FileText, 
-  Plus, 
+import {
+  Home,
   Wallet,
-  User
+  Plus,
+  BarChart2,
+  Settings,
 } from "lucide-react";
 import { cn } from "@core/utils/HelperTool";
 import { motion } from "framer-motion";
@@ -18,33 +18,35 @@ export function NavSider() {
   const pathname = usePathname();
   const brain = useDashBrain();
 
-  const navItems = [
-    { icon: Home, label: "Home", href: "/" },
-    { icon: FileText, label: "Records", href: "/history" },
+  // Left side of the center [+] button
+  const leftNavItems = [
+    { icon: Home,   label: "Home",    href: "/" },
+    { icon: Wallet, label: "Wallets", href: "/wallets" },
   ];
 
-  const rightItems = [
-    { icon: Wallet, label: "Wallets", href: "/wallets" },
-    { icon: User, label: "Profile", href: "/profile" },
+  // Right side of the center [+] button
+  const rightNavItems = [
+    { icon: BarChart2, label: "Reports",  href: "/reports" },
+    { icon: Settings,  label: "Settings", href: "/settings" },
   ];
 
   return (
     <div className="shrink-0 w-full bg-background/95 backdrop-blur-[8px] border-t border-border relative h-[83px]">
       <div className="absolute inset-0 flex items-center pb-[5px] px-[5px]">
-        {/* Left Side Items */}
-        {navItems.map((item) => {
+        {/* Left side: Home + Wallets */}
+        {leftNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link 
+            <Link
               key={item.href}
               href={item.href}
               className="flex flex-1 flex-col items-center justify-center h-full"
             >
-              <item.icon 
+              <item.icon
                 className={cn(
                   "size-[22px] transition-colors",
                   isActive ? "text-[#35C2C1]" : "text-muted-foreground/60"
-                )} 
+                )}
               />
             </Link>
           );
@@ -61,20 +63,20 @@ export function NavSider() {
           </motion.button>
         </div>
 
-        {/* Right Side Items */}
-        {rightItems.map((item) => {
+        {/* Right side: Reports + Settings */}
+        {rightNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link 
+            <Link
               key={item.href}
               href={item.href}
               className="flex flex-1 flex-col items-center justify-center h-full"
             >
-              <item.icon 
+              <item.icon
                 className={cn(
                   "size-[22px] transition-colors",
                   isActive ? "text-[#35C2C1]" : "text-muted-foreground/60"
-                )} 
+                )}
               />
             </Link>
           );
