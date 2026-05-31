@@ -74,10 +74,10 @@ export function MainLayout({ children }: AppLayoutProps) {
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-meta-xs font-bold text-[#35C2C1] uppercase tracking-[0.08em] mb-1">
+              <span className="text-meta-xs font-black text-[#35C2C1] uppercase tracking-[0.16em] mb-1">
                 {greeting}
               </span>
-              <h1 className="text-heading-sm font-bold tracking-tight text-foreground leading-none min-w-[80px]">
+              <h1 className="text-heading-sm font-black tracking-tight text-foreground leading-none min-w-[80px]">
                 {isProfileLoading ? (
                   <div className="h-4 w-24 bg-muted animate-pulse rounded" />
                 ) : (
