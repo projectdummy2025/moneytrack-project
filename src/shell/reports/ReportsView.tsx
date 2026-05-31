@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
   TrendingDown,
   Target,
@@ -355,9 +356,7 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         <div className="flex flex-col gap-6">
 
       {/* ── Search Bar + Filter Toggle ──────────────────────────── */}
-      <div className="flex gap-3 sticky top-0 z-40 py-2">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-lg -mx-4 border-b border-border/10 pointer-events-none" />
-
+      <div className="flex gap-3 w-full">
         <div className="relative flex-1 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 group-focus-within:text-accent group-focus-within:scale-110 transition-all duration-300" />
           <input
@@ -405,41 +404,47 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-4">
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">
                   Wallet
                 </label>
-                <select
-                  value={state.filterWallet}
-                  onChange={(event) => actions.setFilterWallet(event.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">All Wallets</option>
-                  {state.wallets.map((wallet) => (
-                    <option key={wallet.id} value={wallet.walletName}>
-                      {wallet.walletName}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative w-full">
+                  <select
+                    value={state.filterWallet}
+                    onChange={(event) => actions.setFilterWallet(event.target.value)}
+                    className="w-full h-[46px] appearance-none bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl pl-4 pr-10 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
+                  >
+                    <option value="">All Wallets</option>
+                    {state.wallets.map((wallet) => (
+                      <option key={wallet.id} value={wallet.walletName}>
+                        {wallet.walletName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none" />
+                </div>
               </div>
 
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">
                   Category
                 </label>
-                <select
-                  value={state.filterCategory}
-                  onChange={(event) => actions.setFilterCategory(event.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">All Categories</option>
-                  {state.categories.map((category) => (
-                    <option key={category.id} value={category.categoryName}>
-                      {category.categoryName}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative w-full">
+                  <select
+                    value={state.filterCategory}
+                    onChange={(event) => actions.setFilterCategory(event.target.value)}
+                    className="w-full h-[46px] appearance-none bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl pl-4 pr-10 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
+                  >
+                    <option value="">All Categories</option>
+                    {state.categories.map((category) => (
+                      <option key={category.id} value={category.categoryName}>
+                        {category.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none" />
+                </div>
               </div>
             </div>
           </motion.div>

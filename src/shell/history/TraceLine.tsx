@@ -10,6 +10,7 @@ import {
   Trash2,
   Loader2,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency, cn } from "@core/utils/HelperTool";
@@ -62,34 +63,31 @@ export function TraceLine({ state, actions }: TraceLineProps) {
   return (
     <div className="flex flex-col gap-8 font-['Urbanist',sans-serif]">
       {/* Search Bar */}
-      <div className="relative sticky top-0 z-40 py-2">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-lg -mx-4 px-4 border-b border-border/10 pointer-events-none" />
-        <div className="relative flex gap-3">
-          <div className="flex-1 relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 group-focus-within:text-accent group-focus-within:scale-110 transition-all duration-300" />
-            <input
-              type="text"
-              placeholder="Search history..."
-              value={state.searchQuery}
-              onChange={(e) => actions.setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all duration-300 outline-none text-body font-semibold tracking-tight shadow-sm focus:shadow-[0_4px_20px_rgba(53,194,193,0.08)]"
-            />
-          </div>
-          <button
-            onClick={() => actions.setShowFilters(!state.showFilters)}
-            className={cn(
-              "relative w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer shadow-sm",
-              state.showFilters || state.hasActiveFilters
-                ? "bg-gradient-to-tr from-[#35C2C1] to-[#4dd4d3] text-white border-transparent shadow-[#35C2C1]/20"
-                : "bg-secondary/60 hover:bg-secondary/80 text-muted-foreground border-border/40 hover:text-foreground"
-            )}
-          >
-            <Filter className="w-5 h-5 transition-transform duration-300" />
-            {state.hasActiveFilters && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
-            )}
-          </button>
+      <div className="relative flex gap-3 w-full">
+        <div className="flex-1 relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 group-focus-within:text-accent group-focus-within:scale-110 transition-all duration-300" />
+          <input
+            type="text"
+            placeholder="Search history..."
+            value={state.searchQuery}
+            onChange={(e) => actions.setSearchQuery(e.target.value)}
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all duration-300 outline-none text-body font-semibold tracking-tight shadow-sm focus:shadow-[0_4px_20px_rgba(53,194,193,0.08)]"
+          />
         </div>
+        <button
+          onClick={() => actions.setShowFilters(!state.showFilters)}
+          className={cn(
+            "relative w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer shadow-sm",
+            state.showFilters || state.hasActiveFilters
+              ? "bg-gradient-to-tr from-[#35C2C1] to-[#4dd4d3] text-white border-transparent shadow-[#35C2C1]/20"
+              : "bg-secondary/60 hover:bg-secondary/80 text-muted-foreground border-border/40 hover:text-foreground"
+          )}
+        >
+          <Filter className="w-5 h-5 transition-transform duration-300" />
+          {state.hasActiveFilters && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
+          )}
+        </button>
       </div>
 
       {/* Filter Panel */}
@@ -112,56 +110,62 @@ export function TraceLine({ state, actions }: TraceLineProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-4">
               {/* Wallet Filter */}
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Wallet</label>
-                <select
-                  value={state.filterWallet}
-                  onChange={(e) => actions.setFilterWallet(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">All Wallets</option>
-                  {state.wallets.map(w => (
-                    <option key={w.id} value={w.walletName}>{w.walletName}</option>
-                  ))}
-                </select>
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">Wallet</label>
+                <div className="relative w-full">
+                  <select
+                    value={state.filterWallet}
+                    onChange={(e) => actions.setFilterWallet(e.target.value)}
+                    className="w-full h-[46px] appearance-none bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl pl-4 pr-10 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
+                  >
+                    <option value="">All Wallets</option>
+                    {state.wallets.map(w => (
+                      <option key={w.id} value={w.walletName}>{w.walletName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none" />
+                </div>
               </div>
 
               {/* Category Filter */}
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">Category</label>
-                <select
-                  value={state.filterCategory}
-                  onChange={(e) => actions.setFilterCategory(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
-                >
-                  <option value="">All Categories</option>
-                  {state.categories.map(c => (
-                    <option key={c.id} value={c.categoryName}>{c.categoryName}</option>
-                  ))}
-                </select>
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">Category</label>
+                <div className="relative w-full">
+                  <select
+                    value={state.filterCategory}
+                    onChange={(e) => actions.setFilterCategory(e.target.value)}
+                    className="w-full h-[46px] appearance-none bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl pl-4 pr-10 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
+                  >
+                    <option value="">All Categories</option>
+                    {state.categories.map(c => (
+                      <option key={c.id} value={c.categoryName}>{c.categoryName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none" />
+                </div>
               </div>
 
               {/* Date From */}
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">From Date</label>
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">From Date</label>
                 <input
                   type="date"
                   value={state.filterDateFrom}
                   onChange={(e) => actions.setFilterDateFrom(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[46px] bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl px-4 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
                 />
               </div>
 
               {/* Date To */}
               <div>
-                <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">To Date</label>
+                <label className="text-[9px] font-black text-muted-foreground/60 uppercase mb-1.5 block tracking-widest">To Date</label>
                 <input
                   type="date"
                   value={state.filterDateTo}
                   onChange={(e) => actions.setFilterDateTo(e.target.value)}
-                  className="w-full h-[40px] bg-secondary border border-border/50 rounded-xl px-3 text-body-sm font-medium outline-none focus:border-accent transition-colors"
+                  className="w-full h-[46px] bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 rounded-2xl px-4 text-body-sm font-bold outline-none focus:ring-4 focus:ring-accent/5 transition-all duration-300 cursor-pointer text-foreground"
                 />
               </div>
             </div>
