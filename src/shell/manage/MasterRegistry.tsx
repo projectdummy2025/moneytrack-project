@@ -43,7 +43,7 @@ export function MasterRegistry({
     <div className="flex flex-col gap-3 font-['Urbanist',sans-serif]">
       {items.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground bg-secondary/50 rounded-2xl border border-dashed border-border">
-          <p className="text-sm font-medium italic opacity-50">No items added yet</p>
+          <p className="text-body-sm font-medium italic opacity-50">No items added yet</p>
         </div>
       ) : (
         items.map((item, idx) => (
@@ -59,41 +59,42 @@ export function MasterRegistry({
   );
 }
 
-function ManagementItem({ title, subtitle, value, icon: Icon, colorClass, delay = 0, onEdit, onDelete }: ManagementItemProps) {
+function ManagementItem({ title, subtitle, value, colorClass, delay = 0, onEdit, onDelete }: ManagementItemProps) {
+  // Extract background/text color classes or use safe fallbacks for clean dot
+  const isIncome = subtitle.toLowerCase().includes("income");
+  const isExpense = subtitle.toLowerCase().includes("expense");
+  const dotColorClass = colorClass 
+    ? colorClass.includes("text-") ? colorClass.split(" ")[0].replace("text-", "bg-") : "bg-[#35C2C1]"
+    : isIncome ? "bg-[#35C2C1]" : isExpense ? "bg-rose-500" : "bg-blue-500";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      whileTap={{ scale: 0.98, backgroundColor: "rgba(0,0,0,0.02)" }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => onEdit?.()}
-      className="flex items-center gap-4 p-5 cursor-pointer bg-card rounded-3xl border border-border shadow-sm shadow-black/[0.02] transition-all group relative hover:border-accent/30 hover:shadow-md hover:shadow-accent/5"
+      className="flex items-center justify-between p-5 cursor-pointer bg-card rounded-2xl border border-border/40 transition-all select-none hover:border-[#35C2C1]/30 active:bg-secondary/40"
     >
-      <div className={cn(
-        "w-11 h-11 rounded-2xl flex items-center justify-center transition-all border border-border/50",
-        colorClass || "text-primary bg-secondary"
-      )}>
-        {Icon && typeof Icon !== 'string' ? (
-          <Icon className="w-5 h-5 stroke-[2px]" />
-        ) : (
-          <div className="w-5 h-5 rounded-full bg-muted-foreground/20" />
-        )}
-      </div>
+      <div className="flex items-center gap-3.5 min-w-0">
+        {/* Sleek Dot Indicator instead of bulky square boxes */}
+        <div className={cn("w-2.5 h-2.5 rounded-full shrink-0", dotColorClass)} />
 
-      <div className="flex-1 min-w-0">
-        <h4 className="text-body-sm font-bold tracking-tight text-foreground truncate">{title}</h4>
-        <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">{subtitle}</p>
+        <div className="flex flex-col min-w-0">
+          <h4 className="text-body font-black tracking-tight text-foreground truncate">{title}</h4>
+          <p className="text-meta-xs font-black text-muted-foreground/60 uppercase tracking-wider mt-0.5">{subtitle}</p>
+        </div>
       </div>
-
+ 
       <div className="flex items-center gap-3">
         {value !== undefined && (
           <div className="text-right">
-            <p className="text-body-sm font-bold tracking-tight text-foreground">
+            <p className="text-body font-black tracking-tight text-foreground">
               {typeof value === 'number' ? formatCurrency(value) : value}
             </p>
           </div>
         )}
-        <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
       </div>
     </motion.div>
   );

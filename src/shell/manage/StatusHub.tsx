@@ -263,33 +263,57 @@ function AddWalletDialog({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string, type: string, currencyCode?: string) => Promise<void>;
+  onCreate: (name: string, type: string, currencyCode?: string) => Promise<any>;
   isCreating: boolean;
 }) {
   const [walletName, setWalletName] = useState("");
   const [walletType, setWalletType] = useState<"bank" | "cash" | "e-wallet">("bank");
+  const [initialBalance, setInitialBalance] = useState("");
   const [error, setError] = useState("");
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
+    setIsSubmitting(true);
+ 
     if (!walletName.trim()) {
       setError("Wallet name is required");
+      setIsSubmitting(false);
       return;
     }
-
+ 
     try {
-      await onCreate(walletName.trim(), walletType, "IDR");
+      const createdWallet = await onCreate(walletName.trim(), walletType, "IDR");
+      
+      // If initial balance is entered, register it!
+      if (initialBalance && parseFloat(initialBalance) > 0 && createdWallet && createdWallet.id) {
+        const balanceRes = await fetch("/api/wallets/initial-balance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletId: createdWallet.id,
+            amount: initialBalance,
+            memo: "Saldo Awal"
+          })
+        });
+        if (!balanceRes.ok) {
+          throw new Error("Failed to add initial balance");
+        }
+      }
+ 
       setWalletName("");
       setWalletType("bank");
+      setInitialBalance("");
       onClose();
     } catch (err) {
       const error = err as Error;
       setError(error.message || "Failed to create wallet");
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
+ 
   return (
     <AnimatePresence>
       {isOpen && (
@@ -308,23 +332,23 @@ function AddWalletDialog({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-body font-bold text-foreground">Add New Wallet</h2>
+            <h2 className="text-body font-black text-foreground uppercase tracking-wider">Add New Wallet</h2>
             <div className="w-10" />
           </div>
-
+ 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
-            <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
+            <div className="flex-1 flex flex-col gap-10 pt-10 pb-6 overflow-y-auto scrollbar-hide">
               {error && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }} 
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold flex items-center gap-3"
+                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-body-sm font-bold flex items-center gap-3"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   {error}
                 </motion.div>
               )}
-
+ 
               <div className="space-y-4">
                 <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   What should we call it?
@@ -337,7 +361,7 @@ function AddWalletDialog({
                     onChange={(e) => setWalletName(e.target.value)}
                     placeholder="e.g. My Savings, Daily Pocket"
                     className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:text-muted-foreground/20 text-foreground"
-                    disabled={isCreating}
+                    disabled={isCreating || isSubmitting}
                   />
                   <div className="h-[2px] w-full bg-border rounded-full overflow-hidden">
                     <motion.div 
@@ -348,7 +372,31 @@ function AddWalletDialog({
                   </div>
                 </div>
               </div>
-
+ 
+              {/* Initial Balance Input */}
+              <div className="space-y-4">
+                <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
+                  Initial Balance (Optional)
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="number"
+                    value={initialBalance}
+                    onChange={(e) => setInitialBalance(e.target.value)}
+                    placeholder="0"
+                    className="w-full text-xl font-bold bg-transparent border-none outline-none focus:ring-0 placeholder:text-muted-foreground/20 text-foreground"
+                    disabled={isCreating || isSubmitting}
+                  />
+                  <div className="h-[2px] w-full bg-border rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }} 
+                      animate={{ width: initialBalance ? "100%" : "0%" }}
+                      className="h-full bg-[#35C2C1]"
+                    />
+                  </div>
+                </div>
+              </div>
+ 
               <div className="space-y-6">
                 <label className="text-meta-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-1">
                   Wallet Type
@@ -359,7 +407,7 @@ function AddWalletDialog({
                       key={type}
                       type="button"
                       onClick={() => setWalletType(type)}
-                      disabled={isCreating}
+                      disabled={isCreating || isSubmitting}
                       className={cn(
                         "h-[76px] px-6 rounded-2xl text-body font-bold capitalize transition-all border flex items-center justify-between group",
                         walletType === type
@@ -379,13 +427,13 @@ function AddWalletDialog({
                 </div>
               </div>
             </div>
-
+ 
             <button
               type="submit"
-              disabled={isCreating}
-              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50"
+              disabled={isCreating || isSubmitting}
+              className="h-16 rounded-2xl bg-foreground text-white text-body font-black flex items-center justify-center transition-all mb-8 shadow-xl shadow-black/10 active:scale-95 disabled:opacity-50 shrink-0"
             >
-              {isCreating ? (
+              {isCreating || isSubmitting ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="animate-spin" size={20} />
                   <span>Saving Wallet...</span>
@@ -454,7 +502,7 @@ function AddCategoryDialog({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-body font-bold text-foreground">Add New Category</h2>
+            <h2 className="text-body font-black text-foreground uppercase tracking-wider">Add New Category</h2>
             <div className="w-10" />
           </div>
 
@@ -464,7 +512,7 @@ function AddCategoryDialog({
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }} 
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold flex items-center gap-3"
+                  className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-body-sm font-bold flex items-center gap-3"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   {error}
@@ -611,14 +659,14 @@ function EditWalletDialog({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-body font-bold text-foreground">Edit Wallet</h2>
+            <h2 className="text-body font-black text-foreground uppercase tracking-wider">Edit Wallet</h2>
             <div className="w-10" />
           </div>
 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
             <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-body-sm font-bold">
                   {error}
                 </div>
               )}
@@ -752,14 +800,14 @@ function EditCategoryDialog({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-body font-bold text-foreground">Edit Category</h2>
+            <h2 className="text-body font-black text-foreground uppercase tracking-wider">Edit Category</h2>
             <div className="w-10" />
           </div>
 
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-8 max-w-lg mx-auto w-full">
             <div className="flex-1 flex flex-col gap-12 pt-16 pb-12">
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-sm font-bold">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-6 py-4 rounded-2xl text-body-sm font-bold">
                   {error}
                 </div>
               )}
@@ -868,7 +916,7 @@ function DeleteConfirmDialog({
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-body font-bold text-foreground">Confirm Deletion</h2>
+            <h2 className="text-body font-black text-foreground uppercase tracking-wider">Confirm Deletion</h2>
             <div className="w-10" />
           </div>
 
@@ -877,10 +925,10 @@ function DeleteConfirmDialog({
               <Trash2 className="w-10 h-10" />
             </div>
 
-            <h1 className="text-3xl font-black text-foreground tracking-tight mb-4">
+            <h1 className="text-heading-lg font-black text-foreground tracking-tight mb-4">
               Delete {item.type === "wallet" ? "Wallet" : "Category"}?
             </h1>
-            <p className="text-lg font-bold text-muted-foreground/60 leading-relaxed max-w-xs">
+            <p className="text-body font-bold text-muted-foreground/60 leading-relaxed max-w-xs">
               Are you sure you want to permanently delete <span className="text-foreground">&quot;{item.name}&quot;</span>? This action cannot be undone.
             </p>
 
