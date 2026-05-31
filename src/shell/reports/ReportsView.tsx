@@ -7,6 +7,7 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
+  Calendar,
   Search,
   Filter,
   ArrowUpRight,
@@ -116,42 +117,93 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
       />
 
       {/* ── Section 2: Main Tab — Recap / History ──────────────────────────── */}
-      <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
-        {(["recap", "history"] as MainTab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setMainTab(tab)}
-            className={cn(
-              "flex-1 py-2.5 rounded-xl text-[12px] font-bold uppercase tracking-widest transition-all",
-              mainTab === tab
-                ? "bg-card text-foreground shadow-sm border border-border/50"
-                : "text-muted-foreground"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
+      <div className="flex gap-8 border-b border-border/40 pb-0.5 select-none px-1">
+        {(["recap", "history"] as MainTab[]).map((tab) => {
+          const isActive = mainTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setMainTab(tab)}
+              className={cn(
+                "pb-2 text-meta font-black uppercase tracking-[0.16em] transition-all relative cursor-pointer active:scale-95 outline-none",
+                isActive ? "text-foreground font-black" : "text-muted-foreground/50 hover:text-foreground"
+              )}
+            >
+              {tab}
+              {isActive && (
+                <motion.div
+                  layoutId="activeReportsTabUnderline"
+                  className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#35C2C1] rounded-full"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Tab: Recap ─────────────────────────────────────────────────────── */}
       {mainTab === "recap" && (
         <div className="flex flex-col gap-8">
 
-      {/* ── Summary Cards — Income / Expense / Savings ──────────── */}
-      <div className="grid grid-cols-3 gap-3">
-        <SummaryCard label="Income"  value={totalIncome}  icon={TrendingUp}   colorClass="text-white bg-[#35C2C1]" />
-        <SummaryCard label="Expense" value={totalExpense} icon={TrendingDown}  colorClass="text-white bg-rose-500" />
-        <SummaryCard label="Savings" value={netSavings}   icon={Target}        colorClass="text-white bg-blue-500" />
+      {/* ── Summary Card — Unified Monthly Breakdown ──────────── */}
+      <div className="bg-card rounded-2xl border border-border/40 p-5 flex flex-col gap-4 shadow-sm select-none">
+        <div className="flex items-center justify-between">
+          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/60">
+            Monthly Summary
+          </p>
+          <span className="text-[9px] font-black text-[#35C2C1] uppercase tracking-wider">
+            Flow
+          </span>
+        </div>
+        
+        <div className="flex flex-col divide-y divide-border/30">
+          {/* Income Row */}
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#35C2C1]" />
+              <span className="text-body-sm font-bold text-foreground">Income</span>
+            </div>
+            <span className="text-body font-black text-[#35C2C1]">
+              {formatCurrency(totalIncome)}
+            </span>
+          </div>
+
+          {/* Expense Row */}
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="text-body-sm font-bold text-foreground">Expense</span>
+            </div>
+            <span className="text-body font-black text-rose-500">
+              {formatCurrency(totalExpense)}
+            </span>
+          </div>
+
+          {/* Savings Row */}
+          <div className="flex items-center justify-between py-3 pb-0">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="text-body-sm font-bold text-foreground">Savings</span>
+            </div>
+            <span className={cn(
+              "text-body font-black",
+              netSavings >= 0 ? "text-blue-500" : "text-rose-500"
+            )}>
+              {formatCurrency(netSavings)}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* ── Section 3: Pie Chart — Expense Distribution ────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">
+            <h3 className="text-heading-sm font-black text-foreground">
               Expense Distribution
             </h3>
-            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.18em]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/50 mt-0.5">
               Monthly Breakdown
             </p>
           </div>
@@ -216,10 +268,10 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                     exit={{ opacity: 0, scale: 1.05 }}
                     className="flex flex-col items-center"
                   >
-                    <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em] mb-1">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/50 mb-0.5">
                       Total Spent
                     </p>
-                    <p className="text-[26px] font-black tracking-tighter text-foreground leading-none">
+                    <p className="text-display-md font-black tracking-tighter text-foreground leading-none">
                       {formatCurrency(totalExpense)}
                     </p>
                   </motion.div>
@@ -235,13 +287,13 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: categoryData[activePieIndex].color }}
                     />
-                    <p className="text-[11px] font-bold text-foreground uppercase tracking-wide line-clamp-1">
+                    <p className="text-body font-black text-foreground uppercase tracking-wide line-clamp-1">
                       {categoryData[activePieIndex].name}
                     </p>
-                    <p className="text-[22px] font-black tracking-tighter text-foreground leading-none">
+                    <p className="text-heading-xl font-black tracking-tighter text-foreground leading-none">
                       {formatCurrency(categoryData[activePieIndex].value)}
                     </p>
-                    <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/50">
                       {Math.round(categoryData[activePieIndex].percentage)}% of total
                     </p>
                   </motion.div>
@@ -256,10 +308,10 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
       {hasCategoryData && (
         <div className="flex flex-col gap-3">
           <div>
-            <h3 className="text-[18px] font-bold text-foreground leading-tight tracking-tight">
+            <h3 className="text-heading-sm font-black text-foreground">
               Categories
             </h3>
-            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.18em]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/50 mt-0.5">
               Monthly Distribution
             </p>
           </div>
@@ -276,7 +328,7 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                 />
                 <div>
                   <p className="text-body-sm font-bold text-foreground">{category.name}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+                  <p className="text-meta-xs font-bold text-muted-foreground/50 uppercase tracking-widest">
                     {category.count} {category.count === 1 ? "transaction" : "transactions"}
                   </p>
                 </div>
@@ -286,7 +338,7 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                 <p className="text-body font-bold tracking-tighter text-foreground">
                   {formatCurrency(category.value)}
                 </p>
-                <p className="text-[10px] font-medium text-muted-foreground/60">
+                <p className="text-meta-xs font-medium text-muted-foreground/60">
                   {Math.round(category.percentage)}%
                 </p>
               </div>
@@ -303,32 +355,32 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         <div className="flex flex-col gap-6">
 
       {/* ── Search Bar + Filter Toggle ──────────────────────────── */}
-      <div className="flex gap-3 sticky top-0 z-40">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-md -mx-4 pointer-events-none" />
+      <div className="flex gap-3 sticky top-0 z-40 py-2">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-lg -mx-4 border-b border-border/10 pointer-events-none" />
 
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 group-focus-within:text-accent group-focus-within:scale-110 transition-all duration-300" />
           <input
             type="text"
             placeholder="Search transactions..."
             value={state.searchQuery}
             onChange={(event) => actions.setSearchQuery(event.target.value)}
-            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all outline-none text-body font-medium"
+            className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all duration-300 outline-none text-body font-semibold tracking-tight shadow-sm focus:shadow-[0_4px_20px_rgba(53,194,193,0.08)]"
           />
         </div>
 
         <button
           onClick={() => actions.setShowFilters(!state.showFilters)}
           className={cn(
-            "relative w-12 h-12 rounded-2xl border border-border/50 flex items-center justify-center transition-all",
+            "relative w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer shadow-sm",
             state.showFilters || state.hasActiveFilters
-              ? "bg-accent/10 text-accent border-accent/30"
-              : "bg-secondary text-muted-foreground"
+              ? "bg-gradient-to-tr from-[#35C2C1] to-[#4dd4d3] text-white border-transparent shadow-[#35C2C1]/20"
+              : "bg-secondary/60 hover:bg-secondary/80 text-muted-foreground border-border/40 hover:text-foreground"
           )}
         >
-          <Filter className="w-5 h-5" />
+          <Filter className="w-5 h-5 transition-transform duration-300" />
           {state.hasActiveFilters && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
           )}
         </button>
       </div>
@@ -395,25 +447,26 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
       </AnimatePresence>
 
       {/* ── History Sub-Tabs: All / Income / Expense ───────────── */}
-      <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
-        {(["all", "income", "expense"] as HistoryTab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setHistoryTab(tab)}
-            className={cn(
-              "flex-1 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all",
-              historyTab === tab
-                ? tab === "income"
-                  ? "bg-emerald-500 text-white shadow-sm"
-                  : tab === "expense"
-                  ? "bg-rose-500 text-white shadow-sm"
-                  : "bg-card text-foreground shadow-sm border border-border/50"
-                : "text-muted-foreground"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
+      <div className="flex gap-5 overflow-x-auto pb-1.5 scrollbar-hide flex-nowrap px-1">
+        {[
+          { id: "all", label: "All", activeClass: "text-foreground font-black" },
+          { id: "income", label: "Income", activeClass: "text-emerald-600 font-black" },
+          { id: "expense", label: "Expense", activeClass: "text-rose-600 font-black" }
+        ].map((tab) => {
+          const isActive = historyTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setHistoryTab(tab.id as HistoryTab)}
+              className={cn(
+                "py-1 text-meta-xs font-black uppercase tracking-[0.16em] transition-all cursor-pointer whitespace-nowrap active:scale-95",
+                isActive ? tab.activeClass : "text-muted-foreground/50 hover:text-foreground"
+              )}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Transaction List Grouped by Date ───────────────────── */}
@@ -499,7 +552,6 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-// Shows prev/next arrows and the current month name
 function MonthSelector({
   monthDisplayName,
   onPrev,
@@ -510,29 +562,37 @@ function MonthSelector({
   onNext: () => void;
 }) {
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm p-4 flex items-center justify-between">
-      <button
-        onClick={onPrev}
-        className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary/50 hover:bg-secondary active:scale-95 transition-all text-muted-foreground"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-
-      <div className="flex flex-col items-center">
-        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.15em] leading-none mb-1.5">
-          Reporting Period
-        </span>
-        <h2 className="text-body-lg font-bold text-foreground leading-none capitalize">
-          {monthDisplayName}
-        </h2>
+    <div className="flex items-center justify-between w-full px-1 gap-2 select-none">
+      {/* Left Column: Aligned Title (Matches My Wallets styling) */}
+      <div className="flex flex-col min-w-0">
+        <h1 className="text-heading-lg font-extrabold text-foreground truncate">
+          My Reports
+        </h1>
+        <p className="text-meta font-semibold text-muted-foreground uppercase truncate mt-0.5">
+          Monthly breakdown
+        </p>
       </div>
 
-      <button
-        onClick={onNext}
-        className="w-10 h-10 rounded-xl flex items-center justify-center bg-secondary/50 hover:bg-secondary active:scale-95 transition-all text-muted-foreground"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
+      {/* Right Column: Sleek Mini Pill Switcher (Guaranteed no overflow) */}
+      <div className="flex items-center gap-0.5 bg-[#f0f4f4] dark:bg-[#1a2929] p-0.5 rounded-xl border border-border/30 shadow-inner shrink-0">
+        <button
+          onClick={onPrev}
+          className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-card hover:text-foreground active:scale-90 transition-all text-muted-foreground/80 cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        
+        <div className="px-2.5 py-0.5 flex items-center text-meta font-black text-[#35C2C1] capitalize">
+          <span className="truncate max-w-[90px]">{monthDisplayName}</span>
+        </div>
+
+        <button
+          onClick={onNext}
+          className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-card hover:text-foreground active:scale-90 transition-all text-muted-foreground/80 cursor-pointer"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -541,24 +601,19 @@ function MonthSelector({
 function SummaryCard({
   label,
   value,
-  icon: Icon,
-  colorClass,
+  borderColorClass,
 }: {
   label: string;
   value: number;
-  icon: React.ElementType;
-  colorClass: string;
+  borderColorClass: string;
 }) {
   return (
-    <div className="bg-card rounded-3xl p-4 border border-border flex flex-col gap-3 shadow-sm relative overflow-hidden">
-      <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", colorClass)}>
-        <Icon className="w-4 h-4" />
-      </div>
+    <div className={cn("bg-card rounded-2xl p-4 border-l-4 border-y border-r border-y-border border-r-border flex flex-col gap-2 shadow-sm relative overflow-hidden", borderColorClass)}>
       <div>
-        <p className="text-meta-2xs font-semibold uppercase text-muted-foreground mb-1">
+        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-muted-foreground/60 mb-0.5">
           {label}
         </p>
-        <p className="text-body-sm font-bold tracking-tighter text-foreground truncate">
+        <p className="text-body font-black tracking-tight text-foreground truncate">
           {formatCurrency(Math.abs(value))}
         </p>
       </div>
@@ -586,46 +641,40 @@ function TransactionItem({
       animate={{ opacity: 1 }}
       transition={{ delay: animationDelay }}
       onClick={onEdit}
-      className="flex items-center gap-4 p-4 cursor-pointer active:bg-secondary/50 transition-colors"
+      className="flex items-center justify-between p-5 cursor-pointer active:bg-secondary/40 transition-colors select-none"
     >
-      {/* Direction icon */}
-      <div
-        className={cn(
-          "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0",
-          isIncome
-            ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
-            : "bg-secondary text-primary border border-border/50"
-        )}
-      >
-        {isIncome ? (
-          <ArrowUpRight className="w-5 h-5 stroke-[2px]" />
-        ) : (
-          <ArrowDownLeft className="w-5 h-5 stroke-[2px]" />
-        )}
+      <div className="flex items-center gap-3.5 min-w-0">
+        {/* Subtle Colored Dot Indicator */}
+        <div className={cn(
+          "w-2.5 h-2.5 rounded-full shrink-0",
+          isIncome ? "bg-[#35C2C1]" : "bg-rose-500"
+        )} />
+
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-body font-black tracking-tight text-foreground truncate">
+              {transaction.memo || transaction.categoryName}
+            </span>
+            {transaction.memo && (
+              <span className="shrink-0 px-2 py-0.5 rounded-md bg-secondary text-[8px] font-black text-muted-foreground/80 uppercase tracking-wider">
+                {transaction.categoryName}
+              </span>
+            )}
+          </div>
+          <p className="text-meta-xs font-semibold text-muted-foreground/60 leading-none mt-1">
+            {new Date(transaction.transactedAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
       </div>
 
-      {/* Memo and category info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-body-sm font-bold tracking-tight truncate text-foreground">
-          {transaction.memo || transaction.categoryName}
-        </p>
-        <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">
-          {transaction.categoryName} •{" "}
-          {new Date(transaction.transactedAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
-      </div>
-
-      {/* Amount colored by income/expense */}
-      <p
-        className={cn(
-          "text-body-sm font-bold tracking-tight shrink-0",
-          isIncome ? "text-emerald-600" : "text-rose-600"
-        )}
-      >
-        {formatCurrency(transaction.amount)}
+      <p className={cn(
+        "text-body font-black tracking-tight shrink-0",
+        isIncome ? "text-emerald-600" : "text-rose-600"
+      )}>
+        {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
       </p>
     </motion.div>
   );

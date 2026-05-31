@@ -62,31 +62,31 @@ export function TraceLine({ state, actions }: TraceLineProps) {
   return (
     <div className="flex flex-col gap-8 font-['Urbanist',sans-serif]">
       {/* Search Bar */}
-      <div className="relative group sticky top-0 z-40">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-md -mx-4 px-4 pointer-events-none" />
+      <div className="relative sticky top-0 z-40 py-2">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-lg -mx-4 px-4 border-b border-border/10 pointer-events-none" />
         <div className="relative flex gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
+          <div className="flex-1 relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 group-focus-within:text-accent group-focus-within:scale-110 transition-all duration-300" />
             <input
               type="text"
               placeholder="Search history..."
               value={state.searchQuery}
               onChange={(e) => actions.setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary border border-border/50 focus:border-accent focus:ring-2 focus:ring-accent/10 transition-all outline-none text-body font-medium"
+              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-secondary/60 hover:bg-secondary/80 focus:bg-card border border-border/40 focus:border-accent/40 focus:ring-4 focus:ring-accent/5 transition-all duration-300 outline-none text-body font-semibold tracking-tight shadow-sm focus:shadow-[0_4px_20px_rgba(53,194,193,0.08)]"
             />
           </div>
           <button
             onClick={() => actions.setShowFilters(!state.showFilters)}
             className={cn(
-              "w-12 h-12 rounded-2xl border border-border/50 flex items-center justify-center transition-all relative",
+              "relative w-12 h-12 rounded-2xl border flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer shadow-sm",
               state.showFilters || state.hasActiveFilters
-                ? "bg-accent/10 text-accent border-accent/30"
-                : "bg-secondary text-muted-foreground hover:bg-accent/10 hover:text-accent"
+                ? "bg-gradient-to-tr from-[#35C2C1] to-[#4dd4d3] text-white border-transparent shadow-[#35C2C1]/20"
+                : "bg-secondary/60 hover:bg-secondary/80 text-muted-foreground border-border/40 hover:text-foreground"
             )}
           >
-            <Filter className="w-5 h-5" />
+            <Filter className="w-5 h-5 transition-transform duration-300" />
             {state.hasActiveFilters && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-background animate-pulse" />
             )}
           </button>
         </div>
@@ -290,7 +290,7 @@ function HistoryItem({
           {item.memo || item.categoryName}
         </h4>
         <p className="text-meta-xs font-medium text-muted-foreground mt-0.5">
-          {item.categoryName} • {new Date(item.transactedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {item.memo ? `${item.categoryName} • ` : ""}{new Date(item.transactedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
 
