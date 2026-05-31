@@ -16,8 +16,8 @@ export default function WalletsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between px-1">
         <div className="flex flex-col">
-          <h1 className="text-heading-lg font-extrabold text-foreground">My Wallets</h1>
-          <p className="text-meta font-semibold text-muted-foreground uppercase">Manage your accounts</p>
+          <h1 className="text-heading-lg font-black tracking-tight text-foreground">My Wallets</h1>
+          <p className="text-meta font-extrabold uppercase tracking-[0.16em] text-muted-foreground/60">Manage your accounts</p>
         </div>
 
         {/* Action buttons: Transfer (opens swap drawer) + Add New Wallet */}
