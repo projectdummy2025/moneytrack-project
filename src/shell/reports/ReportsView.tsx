@@ -79,14 +79,31 @@ interface ReportsViewProps {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
+type MainTab = "recap" | "history";
+type HistoryTab = "all" | "income" | "expense";
+
 export function ReportsView({ state, actions }: ReportsViewProps) {
-  // Tracks which pie slice is hovered — shows category detail in center
   const [activePieIndex, setActivePieIndex] = useState(-1);
+  const [mainTab, setMainTab] = useState<MainTab>("recap");
+  const [historyTab, setHistoryTab] = useState<HistoryTab>("all");
 
   if (state.isLoading) return <LoadingSkeleton />;
 
   const { totalIncome, totalExpense, netSavings, categoryData } = state.chartStats;
   const hasCategoryData = categoryData.length > 0;
+
+  const filteredGroupedTransactions = historyTab === "all"
+    ? state.groupedTransactions
+    : state.groupedTransactions
+        .map(([dateLabel, items]) => [
+          dateLabel,
+          items.filter((tx) =>
+            historyTab === "income"
+              ? tx.classification === "income"
+              : tx.classification !== "income"
+          ),
+        ] as [string, Transaction[]])
+        .filter(([, items]) => items.length > 0);
 
   return (
     <div className="flex flex-col gap-8 font-['Urbanist',sans-serif] pb-28">
@@ -98,7 +115,29 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         onNext={actions.goToNextMonth}
       />
 
-      {/* ── Section 2: Summary Cards — Income / Expense / Savings ──────────── */}
+      {/* ── Section 2: Main Tab — Recap / History ──────────────────────────── */}
+      <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
+        {(["recap", "history"] as MainTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setMainTab(tab)}
+            className={cn(
+              "flex-1 py-2.5 rounded-xl text-[12px] font-bold uppercase tracking-widest transition-all",
+              mainTab === tab
+                ? "bg-card text-foreground shadow-sm border border-border/50"
+                : "text-muted-foreground"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab: Recap ─────────────────────────────────────────────────────── */}
+      {mainTab === "recap" && (
+        <div className="flex flex-col gap-8">
+
+      {/* ── Summary Cards — Income / Expense / Savings ──────────── */}
       <div className="grid grid-cols-3 gap-3">
         <SummaryCard label="Income"  value={totalIncome}  icon={TrendingUp}   colorClass="text-white bg-[#35C2C1]" />
         <SummaryCard label="Expense" value={totalExpense} icon={TrendingDown}  colorClass="text-white bg-rose-500" />
@@ -256,18 +295,15 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         </div>
       )}
 
-      {/* ── Section 5: Divider between analytics and history ───────────────── */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-border" />
-        <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-[0.2em] whitespace-nowrap">
-          Transaction History
-        </span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
+        </div>
+      )}
 
-      {/* ── Section 6: Search Bar + Filter Toggle ──────────────────────────── */}
+      {/* ── Tab: History ───────────────────────────────────────────────────── */}
+      {mainTab === "history" && (
+        <div className="flex flex-col gap-6">
+
+      {/* ── Search Bar + Filter Toggle ──────────────────────────── */}
       <div className="flex gap-3 sticky top-0 z-40">
-        {/* Semi-transparent backdrop so content scrolling behind looks clean */}
         <div className="absolute inset-0 bg-background/80 backdrop-blur-md -mx-4 pointer-events-none" />
 
         <div className="relative flex-1">
@@ -281,7 +317,6 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
           />
         </div>
 
-        {/* Filter toggle button — badge appears when a filter is active */}
         <button
           onClick={() => actions.setShowFilters(!state.showFilters)}
           className={cn(
@@ -298,7 +333,7 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         </button>
       </div>
 
-      {/* ── Section 7: Collapsible Filter Panel ────────────────────────────── */}
+      {/* ── Collapsible Filter Panel ────────────────────────────── */}
       <AnimatePresence>
         {state.showFilters && (
           <motion.div
@@ -319,7 +354,6 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Wallet dropdown filter */}
               <div>
                 <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">
                   Wallet
@@ -338,7 +372,6 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                 </select>
               </div>
 
-              {/* Category dropdown filter */}
               <div>
                 <label className="text-meta-xs font-bold text-muted-foreground uppercase mb-1.5 block tracking-wider">
                   Category
@@ -361,23 +394,43 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
         )}
       </AnimatePresence>
 
-      {/* ── Section 8: Transaction List Grouped by Date ─────────────────────── */}
+      {/* ── History Sub-Tabs: All / Income / Expense ───────────── */}
+      <div className="flex gap-2 p-1 bg-secondary rounded-2xl">
+        {(["all", "income", "expense"] as HistoryTab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setHistoryTab(tab)}
+            className={cn(
+              "flex-1 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all",
+              historyTab === tab
+                ? tab === "income"
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : tab === "expense"
+                  ? "bg-rose-500 text-white shadow-sm"
+                  : "bg-card text-foreground shadow-sm border border-border/50"
+                : "text-muted-foreground"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Transaction List Grouped by Date ───────────────────── */}
       <div className="flex flex-col gap-6">
-        {state.groupedTransactions.length === 0 ? (
+        {filteredGroupedTransactions.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
             <p className="text-body-sm font-medium italic opacity-50">
               No transactions found
             </p>
           </div>
         ) : (
-          state.groupedTransactions.map(([dateLabel, items], groupIndex) => (
+          filteredGroupedTransactions.map(([dateLabel, items], groupIndex) => (
             <div key={dateLabel} className="flex flex-col gap-2">
-              {/* Date group header */}
               <p className="text-meta-xs font-semibold text-muted-foreground uppercase px-1">
                 {dateLabel}
               </p>
 
-              {/* Transactions for this date */}
               <div className="flex flex-col bg-card rounded-2xl border border-border divide-y divide-border/50 shadow-sm overflow-hidden">
                 {items.map((transaction, itemIndex) => (
                   <TransactionItem
@@ -385,7 +438,6 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
                     transaction={transaction}
                     animationDelay={groupIndex * 0.04 + itemIndex * 0.02}
                     onEdit={() => {
-                      // Find wallet and category IDs to pre-fill the edit dialog
                       const matchedWallet = state.wallets.find(
                         (wallet) => wallet.walletName === transaction.walletName
                       );
@@ -414,6 +466,9 @@ export function ReportsView({ state, actions }: ReportsViewProps) {
           ))
         )}
       </div>
+
+        </div>
+      )}
 
       {/* ── Dialogs ────────────────────────────────────────────────────────── */}
       <EditTransactionDialog
